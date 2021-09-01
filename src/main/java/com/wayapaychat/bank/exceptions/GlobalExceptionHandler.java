@@ -26,19 +26,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_GATEWAY);
     }
 
-    @ExceptionHandler(UnknownHostException.class)
-    public Object resolveHttpClientErrorException(HttpClientErrorException ex)
-            throws JsonProcessingException {
-        ex.printStackTrace();
-
-        ErrorResponse errorResponse = new ErrorResponse();
-        errorResponse.setStatus(ex.getCause().toString());
-        errorResponse.setMessage(ex.getMessage());
-        errorResponse.setTimeStamp(System.currentTimeMillis());
-
-        return new ResponseEntity<>(errorResponse, HttpStatus.ALREADY_REPORTED);
-    }
-
     @ExceptionHandler(HttpClientErrorException.Forbidden.class)
     public ResponseEntity<ErrorResponse> resolveAccessForbiddenException(
             HttpClientErrorException.Forbidden ex) {

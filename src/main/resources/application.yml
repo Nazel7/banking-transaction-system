@@ -17,5 +17,5 @@ jwt:
   key: ${JWT_SECRET}
 
 transaction:
-  tranfer_fail: "Transaction is invalid, please call a customer care.\n We are sorry for any inconvenience. \n Thank you for using WayaPayChat"
-  transfer_successful: "::: Transaction successful :::"
+  tranfer_fail: ${FAIL_TRANSACTION_MESSAGE}
+  transfer_successful: ${SUCCESS_TRANSACTION_MESSAGE}
