@@ -1,6 +1,6 @@
 package com.wayapaychat.bank.auth.filter;
 
-import com.wayapaychat.bank.auth.secureuser.CustomUserDetailsService;
+import com.wayapaychat.bank.services.CustomUserDetailsService;
 import com.wayapaychat.bank.auth.util.JwtUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;

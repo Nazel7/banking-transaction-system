@@ -1,21 +1,21 @@
 package com.wayapaychat.bank.services;
 
-import com.wayapaychat.bank.entity.AccountModel;
-import com.wayapaychat.bank.entity.SecureUser;
-import com.wayapaychat.bank.entity.UserModel;
+import com.wayapaychat.bank.entity.models.AccountModel;
+import com.wayapaychat.bank.entity.models.SecureUserModel;
+import com.wayapaychat.bank.entity.models.UserModel;
 import com.wayapaychat.bank.enums.AccountStatus;
 import com.wayapaychat.bank.enums.Currency;
 import com.wayapaychat.bank.enums.TierLevel;
-import com.wayapaychat.bank.mappers.UserMapper;
+import com.wayapaychat.bank.entity.builder.UserMapper;
 import com.wayapaychat.bank.repository.AccountRepo;
 import com.wayapaychat.bank.repository.SecureUserRepo;
 import com.wayapaychat.bank.repository.UserRepo;
-import com.wayapaychat.bank.specifications.SignUpSpec;
-import com.wayapaychat.bank.specifications.TierLevelSpec;
-import com.wayapaychat.bank.usecases.domain.User;
-import com.wayapaychat.bank.usecases.dtos.request.UserDto;
-import com.wayapaychat.bank.usecases.dtos.request.UserInfoDto;
-import com.wayapaychat.bank.usecases.dtos.response.UserNotFoundException;
+import com.wayapaychat.bank.utils.SignUpSpecUtil;
+import com.wayapaychat.bank.utils.TierLevelSpecUtil;
+import com.wayapaychat.bank.dtos.response.User;
+import com.wayapaychat.bank.dtos.request.UserDto;
+import com.wayapaychat.bank.dtos.request.UserInfoDto;
+import com.wayapaychat.bank.dtos.response.UserNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,7 +37,7 @@ public class UserService {
 
     public User registerUser(final UserDto userDto) throws UserNotFoundException {
 
-        if (!SignUpSpec.isSatisfied(userDto)) {
+        if (!SignUpSpecUtil.isSatisfied(userDto)) {
 
             throw new UserNotFoundException("Unsatisfied request body");
 
@@ -46,7 +46,7 @@ public class UserService {
         UserModel userMap = UserMapper.mapToModel(userDto);
         UserModel userModel = upgradeSignUpUser(userMap);
 
-        AccountModel accountModel = createAccount(userModel);
+        AccountModel accountModel = generateAccountNumber(userModel);
         userModel.setVerifiedEmail(true);
         accountModel.setUserModel(userModel);
         UserModel userModelSaved = mUserRepo.save(userModel);
@@ -56,8 +56,8 @@ public class UserService {
         log.info("::: New account creation for user with id: [{}] saved to DB :::",
                  accountModelSaved.getId());
 
-        SecureUser secureUser = UserMapper.mapToAuth(userModel);
-        mSecureUserRepo.save(secureUser);
+        SecureUserModel secureUserModel = UserMapper.mapToAuth(userModel);
+        mSecureUserRepo.save(secureUserModel);
 
         log.info("::: Login details created successfull :::");
 
@@ -82,7 +82,7 @@ public class UserService {
             model.setBvn(userInfoDto.getBvn());
         }
 
-        String level = TierLevelSpec.getLevel(model);
+        String level = TierLevelSpecUtil.getLevel(model);
 
         if (level.equalsIgnoreCase(TierLevel.LEVEL_TWO.name())) {
             model.setTierLevel(level);
@@ -109,7 +109,7 @@ public class UserService {
             throw new UserNotFoundException("::: User not found :::");
         }
 
-        String level = TierLevelSpec.getLevel(model);
+        String level = TierLevelSpecUtil.getLevel(model);
         if (level.equalsIgnoreCase(TierLevel.LEVEL_TWO.name())) {
             model.setTierLevel(level);
             model.setVerifiedPhone(true);
@@ -142,7 +142,7 @@ public class UserService {
 
     }
 
-    private AccountModel createAccount(UserModel userModel) {
+    private AccountModel generateAccountNumber(UserModel userModel) {
 
         String[] num = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
 

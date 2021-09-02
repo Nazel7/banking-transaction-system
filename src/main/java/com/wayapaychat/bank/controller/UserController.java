@@ -1,10 +1,10 @@
 package com.wayapaychat.bank.controller;
 
 import com.wayapaychat.bank.services.UserService;
-import com.wayapaychat.bank.usecases.domain.User;
-import com.wayapaychat.bank.usecases.dtos.request.UserDto;
-import com.wayapaychat.bank.usecases.dtos.request.UserInfoDto;
-import com.wayapaychat.bank.usecases.dtos.response.UserNotFoundException;
+import com.wayapaychat.bank.dtos.response.User;
+import com.wayapaychat.bank.dtos.request.UserDto;
+import com.wayapaychat.bank.dtos.request.UserInfoDto;
+import com.wayapaychat.bank.dtos.response.UserNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

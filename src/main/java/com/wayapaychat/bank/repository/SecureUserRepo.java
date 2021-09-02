@@ -1,12 +1,12 @@
 package com.wayapaychat.bank.repository;
 
-import com.wayapaychat.bank.entity.SecureUser;
+import com.wayapaychat.bank.entity.models.SecureUserModel;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface SecureUserRepo extends JpaRepository<SecureUser, Long> {
+public interface SecureUserRepo extends JpaRepository<SecureUserModel, Long> {
 
-    SecureUser getSecureUserByUsername(String name);
+    SecureUserModel getSecureUserByUsername(String name);
 
 
 }

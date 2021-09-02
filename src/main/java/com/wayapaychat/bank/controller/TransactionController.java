@@ -1,12 +1,12 @@
 package com.wayapaychat.bank.controller;
 
 import com.wayapaychat.bank.services.TransactionService;
-import com.wayapaychat.bank.usecases.domain.Account;
-import com.wayapaychat.bank.usecases.domain.Transaction;
-import com.wayapaychat.bank.usecases.dtos.request.TopupDto;
-import com.wayapaychat.bank.usecases.dtos.request.TransactionDto;
-import com.wayapaychat.bank.usecases.dtos.response.TransferNotValidException;
-import com.wayapaychat.bank.usecases.dtos.response.UserNotFoundException;
+import com.wayapaychat.bank.dtos.response.Account;
+import com.wayapaychat.bank.dtos.response.Transaction;
+import com.wayapaychat.bank.dtos.request.TopupDto;
+import com.wayapaychat.bank.dtos.request.TransactionDto;
+import com.wayapaychat.bank.dtos.response.TransferNotValidException;
+import com.wayapaychat.bank.dtos.response.UserNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,11 +17,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.NotActiveException;
-import java.math.BigDecimal;
 
 import javax.security.auth.login.AccountException;
 import javax.security.auth.login.AccountNotFoundException;

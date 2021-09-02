@@ -1,28 +1,28 @@
 package com.wayapaychat.bank.services;
 
-import com.wayapaychat.bank.entity.AccountModel;
-import com.wayapaychat.bank.entity.TransactionModel;
-import com.wayapaychat.bank.entity.UserModel;
+import com.wayapaychat.bank.entity.models.AccountModel;
+import com.wayapaychat.bank.entity.models.TransactionModel;
+import com.wayapaychat.bank.entity.models.UserModel;
+import com.wayapaychat.bank.config.*;
 import com.wayapaychat.bank.enums.TransType;
-import com.wayapaychat.bank.mappers.AccountMapper;
-import com.wayapaychat.bank.mappers.TransactionMapper;
-import com.wayapaychat.bank.messageconfig.TransactionMessageConfig;
-import com.wayapaychat.bank.entity.DataBody;
+import com.wayapaychat.bank.entity.builder.AccountMapper;
+import com.wayapaychat.bank.entity.builder.TransactionMapper;
+import com.wayapaychat.bank.entity.models.NotificationLog;
 import com.wayapaychat.bank.event.notifcation.DataInfo;
 import com.wayapaychat.bank.event.notifcation.Receipient;
-import com.wayapaychat.bank.event.notifcation.notificationhandler.DataBodyEvent;
+import com.wayapaychat.bank.event.notifcation.NotificationLogEvent;
 import com.wayapaychat.bank.repository.AccountRepo;
 import com.wayapaychat.bank.repository.TransactionRepo;
 import com.wayapaychat.bank.repository.UserRepo;
-import com.wayapaychat.bank.specifications.TierLevelSpec;
-import com.wayapaychat.bank.specifications.TransferSpec;
-import com.wayapaychat.bank.usecases.domain.Account;
-import com.wayapaychat.bank.usecases.domain.Transaction;
-import com.wayapaychat.bank.usecases.dtos.request.TopupDto;
-import com.wayapaychat.bank.usecases.dtos.request.TransactionDto;
-import com.wayapaychat.bank.usecases.dtos.response.TransferNotValidException;
-import com.wayapaychat.bank.usecases.dtos.response.UserNotFoundException;
-import com.wayapaychat.bank.verifications.AccountVerification;
+import com.wayapaychat.bank.utils.TierLevelSpecUtil;
+import com.wayapaychat.bank.utils.TransferSpecUtil;
+import com.wayapaychat.bank.dtos.response.Account;
+import com.wayapaychat.bank.dtos.response.Transaction;
+import com.wayapaychat.bank.dtos.request.TopupDto;
+import com.wayapaychat.bank.dtos.request.TransactionDto;
+import com.wayapaychat.bank.dtos.response.TransferNotValidException;
+import com.wayapaychat.bank.dtos.response.UserNotFoundException;
+import com.wayapaychat.bank.utils.AccountVerificationUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -30,7 +30,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.NotActiveException;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -51,7 +50,7 @@ public class TransactionService {
     private final UserRepo mUserRepo;
     private final ApplicationEventPublisher mEventPublisher;
 
-    private final TransactionMessageConfig mMessageConfig;
+    private final TranxMessageConfig mMessageConfig;
 
     @Async
     public Transaction tranferFund(TransactionDto transactionDto)
@@ -61,7 +60,7 @@ public class TransactionService {
         DataInfo data = new DataInfo();
         Receipient receipient = new Receipient();
         List<Receipient> receipients = new ArrayList<>();
-        DataBody dataBody= new DataBody();
+        NotificationLog notificationLog = new NotificationLog();
 
         Optional<UserModel> userModel = mUserRepo.findById(transactionDto.getUserId());
         final AccountModel debitAccount =
@@ -84,16 +83,16 @@ public class TransactionService {
 
         // Very if account is active not close or debit freeze
         boolean isAccountStatusVerified =
-                AccountVerification.verifyAccount(debitAccount, creditAccount);
+                AccountVerificationUtil.verifyAccount(debitAccount, creditAccount);
 
         // Check if user meet tierLevel specification
         boolean isSenderTierLevelSatisfied =
-                TierLevelSpec.validate(sender, transactionDto.getAmount());
+                TierLevelSpecUtil.validate(sender, transactionDto.getAmount());
         boolean isReceiverTierLevelSatisfied =
-                TierLevelSpec.validate(receiver, transactionDto.getAmount());
+                TierLevelSpecUtil.validate(receiver, transactionDto.getAmount());
 
         // Verify if transaction request body is satisfied
-        boolean isTranferRequestSpecified = TransferSpec.isSatisfied(transactionDto);
+        boolean isTranferRequestSpecified = TransferSpecUtil.isSatisfied(transactionDto);
 
         if (!isAccountStatusVerified || !isSenderTierLevelSatisfied || !isReceiverTierLevelSatisfied
                 || !isTranferRequestSpecified) {
@@ -128,16 +127,17 @@ public class TransactionService {
                                   transactionDto.getAmount());
             data.setMessage(notificationMessage);
             data.setRecipients(receipients);
-            dataBody.setData(data);
-            dataBody.setEventType(TransType.TRANSFER.name());
+            notificationLog.setData(data);
+            notificationLog.setEventType(TransType.TRANSFER.name());
             String name= userModel.get().getFirstName().concat(" ").concat(userModel.get().getLastName());
-            dataBody.setInitiator(name);
+            notificationLog.setInitiator(name);
 
 //           ResponseEntity<DataBody> dataBodyResponseEntity= mNotification.sendNotification(dataBody);
-            DataBodyEvent dataBodyEvent= new DataBodyEvent(this, dataBody);
-            mEventPublisher.publishEvent(dataBodyEvent);
+            NotificationLogEvent
+                    notificationLogEvent = new NotificationLogEvent(this, notificationLog);
+            mEventPublisher.publishEvent(notificationLogEvent);
            log.info("::: notification sent to receipient: [{}] DB locator :::",
-                   dataBodyEvent.getDataBody());
+                    notificationLogEvent.getDataBody());
 
             return TransactionMapper.mapToDomain(savedTransaction);
 

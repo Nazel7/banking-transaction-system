@@ -1,6 +1,6 @@
 package com.wayapaychat.bank.repository;
 
-import com.wayapaychat.bank.entity.AccountModel;
+import com.wayapaychat.bank.entity.models.AccountModel;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

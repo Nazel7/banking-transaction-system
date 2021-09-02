@@ -1,7 +1,6 @@
 package com.wayapaychat.bank.exceptions;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.wayapaychat.bank.usecases.dtos.response.ErrorResponse;
+import com.wayapaychat.bank.dtos.response.ErrorResponse;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
