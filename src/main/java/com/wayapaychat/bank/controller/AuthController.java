@@ -1,4 +1,4 @@
-package com.wayapaychat.bank.auth.controller;
+package com.wayapaychat.bank.controller;
 
 
 import com.wayapaychat.bank.auth.util.JwtUtil;
