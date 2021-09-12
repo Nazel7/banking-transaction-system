@@ -14,14 +14,16 @@ import org.springframework.stereotype.Service;
 import java.util.Arrays;
 import java.util.Collection;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class CustomUserDetailsService implements UserDetails, UserDetailsService {
 
     private static final long serialVersionUID = 2343412201042424247L;
     protected SecureUserModel user;
 
-    @Autowired
-    private SecureUserRepo repository;
+    private final SecureUserRepo repository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

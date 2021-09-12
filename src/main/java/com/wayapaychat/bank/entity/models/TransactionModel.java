@@ -1,5 +1,7 @@
 package com.wayapaychat.bank.entity.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
@@ -28,6 +30,7 @@ import lombok.experimental.Tolerate;
 @Data
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Access(AccessType.FIELD)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class TransactionModel {
 
     @Id
@@ -48,20 +51,6 @@ public class TransactionModel {
     @Tolerate
     public TransactionModel(){
 
-    }
-
-    private TransactionModel(BigDecimal amount, String benefAccountNo, String debitAccountNo,
-                             String paymentReference, String tranCrncy, String tranNarration,
-                             String tranType, Long userId) {
-
-        this.amount = amount;
-        this.benefAccountNo = benefAccountNo;
-        this.debitAccountNo = debitAccountNo;
-        this.paymentReference = paymentReference;
-        this.tranCrncy = tranCrncy;
-        this.tranNarration = tranNarration;
-        this.tranType = tranType;
-        this.userId = userId;
     }
 
 }

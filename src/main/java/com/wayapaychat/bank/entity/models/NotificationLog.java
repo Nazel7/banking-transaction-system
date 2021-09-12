@@ -1,5 +1,6 @@
 package com.wayapaychat.bank.entity.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import com.wayapaychat.bank.event.notifcation.DataInfo;
 
@@ -14,12 +15,12 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import lombok.Data;
-import lombok.experimental.Tolerate;
 
 @Data
 @Entity
 @Table
 @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class NotificationLog {
 
     @Id

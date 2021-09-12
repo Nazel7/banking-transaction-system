@@ -1,5 +1,7 @@
 package com.wayapaychat.bank.entity.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -17,6 +19,7 @@ import lombok.experimental.Tolerate;
 @Data
 @Entity
 @Table(name = "customers")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UserModel {
 
     @Id

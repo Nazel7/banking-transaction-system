@@ -68,10 +68,12 @@ public class TransactionService {
 
         if (!userModel.isPresent()) {
 
+            log.error("::: User not found with body: [{}]::: ", userModel.get());
             throw new UserNotFoundException("User not found ");
         }
         if (!userModel.get().equals(debitAccount.getUserModel())) {
 
+            log.error("::: user account not valid, Account: [{}] :::", debitAccount);
             throw new AccountNotFoundException("User account not valid");
         }
 
@@ -84,19 +86,23 @@ public class TransactionService {
         // Very if account is active not close or debit freeze
         boolean isAccountStatusVerified =
                 AccountVerificationUtil.verifyAccount(debitAccount, creditAccount);
+        log.info("::: Account Status verified: [{}] :::", isAccountStatusVerified);
 
         // Check if user meet tierLevel specification
         boolean isSenderTierLevelSatisfied =
                 TierLevelSpecUtil.validate(sender, transactionDto.getAmount());
+        log.info("::: Sender meet tierLeveL: [{}] :::", isSenderTierLevelSatisfied);
         boolean isReceiverTierLevelSatisfied =
                 TierLevelSpecUtil.validate(receiver, transactionDto.getAmount());
+        log.info("::: Receiver meet tierLeveL: [{}] :::", isReceiverTierLevelSatisfied);
 
         // Verify if transaction request body is satisfied
         boolean isTranferRequestSpecified = TransferSpecUtil.isSatisfied(transactionDto);
+        log.info("::: Transaction request satisfied: [{}] :::", isTranferRequestSpecified);
 
         if (!isAccountStatusVerified || !isSenderTierLevelSatisfied || !isReceiverTierLevelSatisfied
                 || !isTranferRequestSpecified) {
-
+            log.info("::: Transaction failed");
             throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
         }
 
@@ -132,11 +138,10 @@ public class TransactionService {
             String name= userModel.get().getFirstName().concat(" ").concat(userModel.get().getLastName());
             notificationLog.setInitiator(name);
 
-//           ResponseEntity<DataBody> dataBodyResponseEntity= mNotification.sendNotification(dataBody);
-            NotificationLogEvent
+            final NotificationLogEvent
                     notificationLogEvent = new NotificationLogEvent(this, notificationLog);
             mEventPublisher.publishEvent(notificationLogEvent);
-           log.info("::: notification sent to receipient: [{}] DB locator :::",
+           log.info("::: notification sent to recipient: [{}] DB locator :::",
                     notificationLogEvent.getDataBody());
 
             return TransactionMapper.mapToDomain(savedTransaction);

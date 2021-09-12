@@ -1,6 +1,7 @@
 package com.wayapaychat.bank.entity.models;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -39,6 +40,7 @@ import lombok.experimental.Tolerate;
 @Data
 @Access(AccessType.FIELD)
 @ToString
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AccountModel {
 
     private static final BigDecimal OVER_DRAFT = new BigDecimal(100);

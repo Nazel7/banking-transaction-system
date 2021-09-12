@@ -1,5 +1,7 @@
 package com.wayapaychat.bank.entity.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.CascadeType;
@@ -23,6 +25,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "secure_user")
 @Access(AccessType.FIELD)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SecureUserModel {
 
     @Id
