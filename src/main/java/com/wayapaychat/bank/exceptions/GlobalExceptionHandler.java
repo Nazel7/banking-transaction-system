@@ -35,11 +35,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         }
 
         ErrorResponse errorResponse = new ErrorResponse();
-        errorResponse.setStatus(HttpStatus.BAD_GATEWAY.toString());
+        errorResponse.setStatus(HttpStatus.BAD_REQUEST.toString());
         errorResponse.setMessage(ex.getMessage());
         errorResponse.setTimeStamp(System.currentTimeMillis());
 
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_GATEWAY);
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
     @ExceptionHandler(UnknownHostException.class)
     public final ResponseEntity<ErrorResponse> resolveUnknownHostException(UnknownHostException ex, WebRequest request) {
