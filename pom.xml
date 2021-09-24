@@ -91,7 +91,6 @@
 							<artifactId>lombok</artifactId>
 						</exclude>
 					</excludes>
-					<finalName>nazel/${project.artifactId}.${project.version}</finalName>
 				</configuration>
 			</plugin>
 		</plugins>
