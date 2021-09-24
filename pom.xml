@@ -15,6 +15,7 @@
 	<description>Wayapaychat Banking Service</description>
 	<properties>
 		<java.version>11</java.version>
+		<swaggerVersion>2.9.2</swaggerVersion>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -52,6 +53,18 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-amqp</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger2</artifactId>
+			<version>${swaggerVersion}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger-ui</artifactId>
+			<version>${swaggerVersion}</version>
+		</dependency>
+
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

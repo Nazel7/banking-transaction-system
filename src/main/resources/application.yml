@@ -2,6 +2,13 @@ server:
   port: ${PORT:80}
 
 spring:
+  application:
+    name: @project.name@
+    version: @project.version@
+    description: @project.description@
+  mvc:
+    servlet:
+      path: /api
   datasource:
     url: ${POSTGRE_URL}
     username: ${DATABASE_USERNAME}

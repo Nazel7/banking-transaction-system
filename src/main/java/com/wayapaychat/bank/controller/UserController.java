@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -29,6 +30,7 @@ public class UserController {
 
     @CrossOrigin
     @PostMapping(" ")
+    @ApiOperation(value = "::: createUser :::", notes = "API for user creation with login credentials")
     public ResponseEntity<User> createUser(@RequestBody UserDto userDto)
             throws UserNotFoundException {
 
@@ -39,6 +41,8 @@ public class UserController {
 
     @CrossOrigin
     @PreAuthorize("hasRole('CUSTOMER')")
+    @ApiOperation(value = "::: upgradeUserInfo :::", notes = "API to upgrade user Level based on the"
+            + " amount of fund capable to transact")
     @PatchMapping("/{id}")
     public ResponseEntity<User> upgradeUserInfo(@PathVariable("id") Long userId, @RequestBody UserInfoDto userDto)
             throws UserNotFoundException {

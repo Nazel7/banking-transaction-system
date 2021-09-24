@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,11 +40,13 @@ public class AuthController {
 
     private final SecureUserRepo mSecureUserRepo;
 
+    @ApiOperation(value = "::: welcome :::", notes = "application health check")
     @GetMapping(" ")
     public String welcome() {
         return "Welcome to Wayapaychat Banking Service !!";
     }
 
+    @ApiOperation(value = "::: generateToken :::", notes = "Login channel")
     @PostMapping(" ")
     public ResponseEntity<LogginResponse> generateToken(@RequestBody LoginRequestUtil loginRequestUtil) throws Exception {
         log.info("::: Login request processing :::");

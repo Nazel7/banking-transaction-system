@@ -24,6 +24,7 @@ import java.io.NotActiveException;
 import javax.security.auth.login.AccountException;
 import javax.security.auth.login.AccountNotFoundException;
 
+import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -35,6 +36,7 @@ public class TransactionController {
 
     @CrossOrigin
     @PostMapping(" ")
+    @ApiOperation(value = "::: transferFund :::", notes = "APi for fund transfer")
     @PreAuthorize("hasRole('CUSTOMER')")
    public ResponseEntity<Transaction>  transferFund(@RequestBody TransactionDto transactionDto)
             throws AccountException, TransferNotValidException, UserNotFoundException,
@@ -47,6 +49,7 @@ public class TransactionController {
 
    @CrossOrigin
    @PreAuthorize("hasRole('CUSTOMER')")
+   @ApiOperation(value = "::: fundAccount :::", notes = "Api for quick account topUp")
    @PutMapping(" ")
 public ResponseEntity<Account>  fundAccount(@RequestBody TopupDto topupDto)
            throws AccountNotFoundException {
