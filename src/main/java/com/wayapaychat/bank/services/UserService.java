@@ -56,10 +56,10 @@ public class UserService {
         log.info("::: New account creation for user with id: [{}] saved to DB :::",
                  accountModelSaved.getId());
 
-        SecureUserModel secureUserModel = UserMapper.mapToAuth(userModel);
+        SecureUserModel secureUserModel = UserMapper.mapToAuth(userModel, userDto);
         mSecureUserRepo.save(secureUserModel);
 
-        log.info("::: Login details created successfull :::");
+        log.info("::: Login details created successful :::");
 
         return UserMapper.mapToDomain(userModelSaved);
 
@@ -147,7 +147,7 @@ public class UserService {
         String[] num = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
 
         SecureRandom random = new SecureRandom();
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < 10; i++) {
             int n = random.nextInt(num.length);
             sb.append(num[n]);

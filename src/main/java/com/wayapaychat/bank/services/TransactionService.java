@@ -142,7 +142,7 @@ public class TransactionService {
                     notificationLogEvent = new NotificationLogEvent(this, notificationLog);
             mEventPublisher.publishEvent(notificationLogEvent);
            log.info("::: notification sent to recipient: [{}] DB locator :::",
-                    notificationLogEvent.getDataBody());
+                    notificationLogEvent.getNotificationLog());
 
             return TransactionMapper.mapToDomain(savedTransaction);
 

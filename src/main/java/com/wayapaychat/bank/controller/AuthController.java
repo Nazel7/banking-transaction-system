@@ -53,7 +53,7 @@ public class AuthController {
                             .getPassword())
             );
         } catch (Exception ex) {
-            throw new Exception(" Inavalid username or password");
+            throw new Exception(" Invalid username or password");
         }
 
         final SecureUserModel

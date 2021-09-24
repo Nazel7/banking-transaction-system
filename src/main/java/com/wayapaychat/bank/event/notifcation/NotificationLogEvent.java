@@ -17,7 +17,7 @@ public class NotificationLogEvent extends ApplicationEvent {
         this.mNotificationLog = notificationLog;
     }
 
-    public NotificationLog getDataBody() {
+    public NotificationLog getNotificationLog() {
         return mNotificationLog;
     }
 }

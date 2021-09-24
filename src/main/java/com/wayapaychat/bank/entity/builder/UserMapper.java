@@ -21,7 +21,6 @@ public class UserMapper {
                 .firstName(userDto.getFirstName())
                 .lastName(userDto.getLastName())
                 .tierLevel(TierLevel.LEVEL_ONE.name())
-                .password(userDto.getPassword())
                 .bvn(userDto.getBvn())
                 .phone(userDto.getPhone())
                 .build();
@@ -71,9 +70,9 @@ public class UserMapper {
 
     }
 
-    public static SecureUserModel mapToAuth(UserModel userModel){
+    public static SecureUserModel mapToAuth(UserModel userModel, UserDto userDto){
         BCryptPasswordEncoder encoder= new BCryptPasswordEncoder();
-        String passcode= encoder.encode(userModel.getPassword());
+        String passcode= encoder.encode(userDto.getPassword());
 
         return SecureUserModel
                 .builder()
@@ -84,5 +83,4 @@ public class UserMapper {
                 .build();
 
     }
-
 }

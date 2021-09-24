@@ -29,6 +29,8 @@ import javax.security.auth.login.AccountException;
 
 import lombok.AccessLevel;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Tolerate;
@@ -37,7 +39,8 @@ import lombok.experimental.Tolerate;
 @Table(name = "bank_account", indexes = {
         @Index(name = "account_iban_index", columnList = "account_iban")
 })
-@Data
+@Getter
+@Setter
 @Access(AccessType.FIELD)
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -115,7 +118,7 @@ public class AccountModel {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (o == null || this.getClass() != o.getClass()) {
             return false;
         }
         AccountModel accountModel = (AccountModel) o;

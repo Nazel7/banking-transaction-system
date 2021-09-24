@@ -8,6 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -18,7 +19,12 @@ import lombok.experimental.Tolerate;
 @Builder
 @Data
 @Entity
-@Table(name = "customers")
+@Table(name = "customers", indexes = {
+        @Index(name = "email_index", columnList = "email"),
+        @Index(name = "bvn_index", columnList = "bvn"),
+        @Index(name = "phone_index", columnList = "phone"),
+        @Index(name = "tier_level_index", columnList = "tierLevel"),
+})
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class UserModel {
 
@@ -30,7 +36,6 @@ public class UserModel {
     private String firstName;
     private String lastName;
     private String email;
-    private String password;
     private String address;
     private String phone;
     private String pin;

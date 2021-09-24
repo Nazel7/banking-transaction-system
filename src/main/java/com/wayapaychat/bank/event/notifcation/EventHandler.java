@@ -1,8 +1,9 @@
 package com.wayapaychat.bank.event.notifcation;
 
+import com.wayapaychat.bank.config.MQConfig;
 import com.wayapaychat.bank.entity.models.NotificationLog;
-import com.wayapaychat.bank.repository.DataBodyRepo;
 
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
@@ -16,16 +17,16 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class EventHandler {
 
-   private final DataBodyRepo message;
+   private final RabbitTemplate mRabbitTemplate;
 
     @Async
     @EventListener
     public void publishMessage(NotificationLogEvent notificationLogEvent){
 
-        final NotificationLog notificationLog = notificationLogEvent.getDataBody();
-        NotificationLog savedNotificationLog = message.save(notificationLog);
+        final NotificationLog notificationLog = notificationLogEvent.getNotificationLog();
+        mRabbitTemplate.convertAndSend(MQConfig.EXCHANGE, MQConfig.ROUTE_KEY, notificationLog);
 
-        log.info("::: Message sent with payload: [{}] :::", savedNotificationLog);
+        log.info("::: Message sent with payload: [{}] :::", notificationLog);
 
     }
 }

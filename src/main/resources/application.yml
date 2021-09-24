@@ -13,6 +13,15 @@ spring:
     hibernate:
       ddl-auto: update
 
+  rabbitmq:
+    host: localhost
+    port: ${RABBITMQ_PORT:56}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
+    topic: ${RABBITMQ_EXCHANGE}
+    queue: ${RABBITMQ_QUEUE}
+    routekey: ${RABBITMQ_ROUTE_KEY}
+
 jwt:
   key: ${JWT_SECRET}
 
