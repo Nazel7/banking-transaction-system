@@ -17,17 +17,17 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class EventHandler {
 
-   private final RabbitTemplate mRabbitTemplate;
+    private final RabbitTemplate mRabbitTemplate;
 
     @Value("${spring.rabbitmq.topic}")
-    public  String EXCHANGE;
+    private String EXCHANGE;
 
     @Value("${spring.rabbitmq.routekey}")
-    public String ROUTE_KEY;
+    private String ROUTE_KEY;
 
     @Async
     @EventListener
-    public void publishMessage(NotificationLogEvent notificationLogEvent){
+    public void publishMessage(NotificationLogEvent notificationLogEvent) {
 
         final NotificationLog notificationLog = notificationLogEvent.getNotificationLog();
         mRabbitTemplate.convertAndSend(EXCHANGE, ROUTE_KEY, notificationLog);
