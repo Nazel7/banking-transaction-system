@@ -16,13 +16,13 @@ import org.springframework.context.annotation.Configuration;
 public class MQConfig {
 
     @Value("${spring.rabbitmq.queue}")
-    public String QUEUE;
+    private String QUEUE;
 
     @Value("${spring.rabbitmq.topic}")
-    public String EXCHANGE;
+    private String EXCHANGE;
 
     @Value("${spring.rabbitmq.routekey}")
-    public String ROUTE_KEY;
+    private String ROUTE_KEY;
 
     @Bean
     public Queue queue() {
