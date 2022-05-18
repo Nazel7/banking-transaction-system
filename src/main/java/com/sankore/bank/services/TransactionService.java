@@ -4,6 +4,7 @@ import com.sankore.bank.auth.util.JwtUtil;
 import com.sankore.bank.configs.TranxMessageConfig;
 import com.sankore.bank.dtos.request.TopupDto;
 import com.sankore.bank.dtos.request.TransferDto;
+import com.sankore.bank.dtos.request.WithrawalDto;
 import com.sankore.bank.dtos.response.Account;
 import com.sankore.bank.dtos.response.Transaction;
 import com.sankore.bank.dtos.response.TransferNotValidException;
@@ -127,16 +128,16 @@ public class TransactionService {
             throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
         }
 
-        AccountModel creditedAccount =
-                creditAccount.deposit(transferDto.getAmount());
+        final AccountModel creditedAccount = creditAccount.deposit(transferDto.getAmount());
 
         mAccountRepo.save(debitedAccount);
         mAccountRepo.save(creditedAccount);
 
-        log.info("::: Account with iban: [{}] has been debited ", debitedAccount.getIban());
-        log.info("::: Account with iban: [{}] has been credited ", creditedAccount.getIban());
+        log.info("::: Account has been debited with iban: [{}]", debitedAccount.getIban());
+        log.info("::: Account has been credited with iban: [{}] ", creditedAccount.getIban());
         log.info(mMessageConfig.getTransfer_successful());
         TransactionModel savedTransaction = mTransactionRepo.save(transactionModel);
+        log.info("::: FundTransfer LogModel audited successfully");
 
         receipient.setEmail(creditAccount.getUserModel().getEmail());
         receipient.setTelephone(creditAccount.getUserModel().getPhone());
@@ -198,7 +199,62 @@ public class TransactionService {
     }
 
 
-    public Account doFundWithdrawal()
+    public Account doFundWithdrawal(WithrawalDto withrawalDto, HttpServletRequest request) throws AccountException, IllegalAccessException, TransferNotValidException {
+        log.info("::: In doFundWithdrawal.....");
+        String token = request.getHeader("Authorization");
+        if (token.contains("Bearer")) {
+            token = token.split(" ")[1];
+        }
+        NotificationLog notificationLog = new NotificationLog();
+        boolean isRequestValid = BaseUtil.isRequestSatisfied(withrawalDto);
+        if (!isRequestValid) {
+            log.error("::: FundWithdrawal request error with payload: [{}]", withrawalDto);
+            throw new IllegalArgumentException("TopUp request error with payload");
+        }
+
+        AccountModel accountModel = mAccountRepo.findAccountModelByIban(withrawalDto.getIban());
+
+        log.info("::: About to validate Account owner.....");
+        String userName = jwtUtil.extractUsername(token);
+        if (!userName.equals(accountModel.getUserModel().getEmail())) {
+            log.error("::: Account broken, Invalid Account access");
+            throw new IllegalAccessException("Account broken, Invalid Account access");
+        }
+
+        // Very if account is active not close or debit freeze
+        boolean isAccountStatusVerified =
+                BaseUtil.verifyAccount(accountModel);
+        log.info("::: Account Status verified: [{}] :::", isAccountStatusVerified);
+
+        // Check if user meet tierLevel specification
+        boolean isTierLevelSatisfied =
+                TierLevelSpecUtil.validate(accountModel.getUserModel(), withrawalDto.getAmount());
+        log.info(":::  Account tierLeveL satisfied: [{}] :::", isTierLevelSatisfied);
+
+        if (!isAccountStatusVerified) {
+            log.info("::: Transaction failed");
+            throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
+        }
+
+        final TransactionModel transactionModel = TransactionMapper.mapToModel(withrawalDto, token);
+
+        final AccountModel debitedAccount = accountModel.withdraw(withrawalDto.getAmount());
+
+        if (debitedAccount == null) {
+            log.error("::: Transfer failed insufficient balance.");
+            throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
+        }
+
+        AccountModel debitedAccountSaved = mAccountRepo.save(debitedAccount);
+        log.info("::: Account debit updated successfully with payload`; [{}]", debitedAccountSaved);
+
+        TransactionModel savedLogModel = mTransactionRepo.save(transactionModel);
+        log.info("::: FundWithdrawal LogModel audited successfully with paylaod: [{}]",savedLogModel);
+
+        notificationLog.setInitiator();
+
+
+    }
 
     // TODO: UPDATE FUND_ACCOUNT  AND TRANSFER_FUND SERVICE
     // TODO: DIRECT_DEBIT

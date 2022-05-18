@@ -4,6 +4,7 @@ import com.sankore.bank.contants.ChannelConsts;
 import com.sankore.bank.dtos.request.SignUpDto;
 import com.sankore.bank.dtos.request.TopupDto;
 import com.sankore.bank.dtos.request.TransferDto;
+import com.sankore.bank.dtos.request.WithrawalDto;
 import com.sankore.bank.entities.models.AccountModel;
 import com.sankore.bank.entities.models.UserModel;
 import com.sankore.bank.enums.AccountStatus;
@@ -122,6 +123,30 @@ public class BaseUtil {
         } catch (NullPointerException ex) {
             ex.printStackTrace();
             log.debug("::: Unsatisfied requestBody [{}]:::", topupDto);
+            return false;
+        }
+
+    }
+
+    public static boolean isRequestSatisfied(WithrawalDto withrawalDto) {
+        try{
+
+            Objects.requireNonNull(withrawalDto.getAmount());
+            Objects.requireNonNull(withrawalDto.getIban());
+            Objects.requireNonNull(withrawalDto.getChannelCode());
+            Objects.requireNonNull(withrawalDto.getTranxRef());
+            Objects.requireNonNull(withrawalDto.getTranxType());
+            Objects.requireNonNull(withrawalDto.getChannelCode());
+            Objects.requireNonNull(withrawalDto.getTranxCrncy());
+
+
+
+            log.info("::: Satisfied requestBody: [{}] :::", withrawalDto);
+            return true;
+
+        } catch (NullPointerException ex) {
+            ex.printStackTrace();
+            log.debug("::: Unsatisfied requestBody [{}]:::", withrawalDto);
             return false;
         }
 

@@ -12,5 +12,7 @@ public class WithrawalDto {
     private String tranxRef;
     private String channelCode;
     private String tranxType;
+    private String tranxCrncy;
+    private String tranxNaration;
 
 }

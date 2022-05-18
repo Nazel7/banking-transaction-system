@@ -1,4 +1,5 @@
 package com.sankore.bank.entities.builder;
+import com.sankore.bank.dtos.request.WithrawalDto;
 import com.sankore.bank.entities.models.TransactionModel;
 import com.sankore.bank.dtos.response.Transaction;
 import com.sankore.bank.dtos.request.TransferDto;
@@ -19,6 +20,21 @@ public class TransactionMapper {
                 .userToken(token)
                 .tranNarration(transferDto.getTranNarration())
                 .userId(transferDto.getUserId())
+                .build();
+    }
+
+    public static TransactionModel mapToModel(WithrawalDto withrawalDto, String token){
+
+        return TransactionModel
+                .builder()
+                .amount(withrawalDto.getAmount())
+                .tranxRef(withrawalDto.getTranxRef())
+                .benefAccountNo(withrawalDto.getIban())
+                .debitAccountNo(withrawalDto.getIban())
+                .tranCrncy(withrawalDto.getTranxCrncy())
+                .tranType(withrawalDto.getTranxType())
+                .userToken(token)
+                .tranNarration(withrawalDto.getTranxNaration())
                 .build();
     }
 
