@@ -8,7 +8,7 @@ import lombok.experimental.Tolerate;
 
 @Data
 @Builder
-public class TransactionDto {
+public class TransferDto {
 
     private BigDecimal amount;
     private String benefAccountNo;
@@ -18,10 +18,11 @@ public class TransactionDto {
     private String tranNarration;
     private String tranType;
     private String tranxRef;
+    private String channelCode;
     private Long userId;
 
     @Tolerate
-    public TransactionDto(){
+    public TransferDto(){
 
     }
 }

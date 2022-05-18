@@ -4,7 +4,7 @@ import com.sankore.bank.services.TransactionService;
 import com.sankore.bank.dtos.response.Account;
 import com.sankore.bank.dtos.response.Transaction;
 import com.sankore.bank.dtos.request.TopupDto;
-import com.sankore.bank.dtos.request.TransactionDto;
+import com.sankore.bank.dtos.request.TransferDto;
 import com.sankore.bank.dtos.response.TransferNotValidException;
 import com.sankore.bank.dtos.response.UserNotFoundException;
 
@@ -38,11 +38,11 @@ public class TransactionController {
     @PostMapping(" ")
     @ApiOperation(value = "::: transferFund :::", notes = "APi for fund transfer")
     @PreAuthorize("hasRole('CUSTOMER')")
-   public ResponseEntity<Transaction>  transferFund(@RequestBody TransactionDto transactionDto)
+   public ResponseEntity<Transaction>  transferFund(@RequestBody TransferDto transferDto)
             throws AccountException, TransferNotValidException, UserNotFoundException,
                    NotActiveException {
 
-       final Transaction transaction= mTransactionService.tranferFund(transactionDto);
+       final Transaction transaction= mTransactionService.tranferFund(transferDto);
 
        return new ResponseEntity<>(transaction, HttpStatus.OK);
    }

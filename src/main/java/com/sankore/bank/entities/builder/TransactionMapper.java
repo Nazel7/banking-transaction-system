@@ -1,22 +1,22 @@
 package com.sankore.bank.entities.builder;
 import com.sankore.bank.entities.models.TransactionModel;
 import com.sankore.bank.dtos.response.Transaction;
-import com.sankore.bank.dtos.request.TransactionDto;
+import com.sankore.bank.dtos.request.TransferDto;
 
 public class TransactionMapper {
 
-    public static TransactionModel mapToModel(TransactionDto transactionDto){
+    public static TransactionModel mapToModel(TransferDto transferDto){
 
         return TransactionModel
                 .builder()
-                .amount(transactionDto.getAmount())
-                .paymentReference(transactionDto.getPaymentReference())
-                .benefAccountNo(transactionDto.getBenefAccountNo())
-                .debitAccountNo(transactionDto.getDebitAccountNo())
-                .tranCrncy(transactionDto.getTranCrncy())
-                .tranType(transactionDto.getTranType())
-                .tranNarration(transactionDto.getTranNarration())
-                .userId(transactionDto.getUserId())
+                .amount(transferDto.getAmount())
+                .paymentReference(transferDto.getPaymentReference())
+                .benefAccountNo(transferDto.getBenefAccountNo())
+                .debitAccountNo(transferDto.getDebitAccountNo())
+                .tranCrncy(transferDto.getTranCrncy())
+                .tranType(transferDto.getTranType())
+                .tranNarration(transferDto.getTranNarration())
+                .userId(transferDto.getUserId())
                 .build();
     }
 

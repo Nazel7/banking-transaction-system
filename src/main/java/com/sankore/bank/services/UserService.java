@@ -2,16 +2,12 @@ package com.sankore.bank.services;
 
 import com.sankore.bank.entities.builder.UserMapper;
 import com.sankore.bank.entities.models.AccountModel;
-import com.sankore.bank.enums.TierLevel;
 import com.sankore.bank.entities.models.SecureUserModel;
 import com.sankore.bank.entities.models.UserModel;
-import com.sankore.bank.enums.AccountStatus;
-import com.sankore.bank.enums.Currency;
 import com.sankore.bank.repositories.AccountRepo;
 import com.sankore.bank.repositories.SecureUserRepo;
 import com.sankore.bank.repositories.UserRepo;
 import com.sankore.bank.utils.BaseUtil;
-import com.sankore.bank.utils.SignUpSpecUtil;
 import com.sankore.bank.utils.TierLevelSpecUtil;
 import com.sankore.bank.dtos.response.User;
 import com.sankore.bank.dtos.request.SignUpDto;
@@ -21,7 +17,6 @@ import com.sankore.bank.dtos.response.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.security.SecureRandom;
 import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
@@ -38,7 +33,7 @@ public class UserService {
 
     public User registerUser(final SignUpDto signUpDto) throws UserNotFoundException {
 
-        if (!SignUpSpecUtil.isSatisfied(signUpDto)) {
+        if (!BaseUtil.isSignUpSatisfied(signUpDto)) {
 
             throw new UserNotFoundException("Unsatisfied request body");
 

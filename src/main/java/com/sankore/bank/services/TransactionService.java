@@ -2,7 +2,7 @@ package com.sankore.bank.services;
 
 import com.sankore.bank.configs.TranxMessageConfig;
 import com.sankore.bank.dtos.request.TopupDto;
-import com.sankore.bank.dtos.request.TransactionDto;
+import com.sankore.bank.dtos.request.TransferDto;
 import com.sankore.bank.dtos.response.Account;
 import com.sankore.bank.dtos.response.Transaction;
 import com.sankore.bank.dtos.response.TransferNotValidException;
@@ -20,9 +20,8 @@ import com.sankore.bank.event.notifcation.Receipient;
 import com.sankore.bank.repositories.AccountRepo;
 import com.sankore.bank.repositories.TransactionRepo;
 import com.sankore.bank.repositories.UserRepo;
-import com.sankore.bank.utils.AccountVerificationUtil;
+import com.sankore.bank.utils.BaseUtil;
 import com.sankore.bank.utils.TierLevelSpecUtil;
-import com.sankore.bank.utils.TransferSpecUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +46,7 @@ public class TransactionService {
 
     private final TranxMessageConfig mMessageConfig;
 
-    public Transaction tranferFund(TransactionDto transactionDto)
+    public Transaction tranferFund(TransferDto transferDto)
             throws AccountException, TransferNotValidException, UserNotFoundException{
 
         DataInfo data = new DataInfo();
@@ -55,9 +54,9 @@ public class TransactionService {
         List<Receipient> receipients = new ArrayList<>();
         NotificationLog notificationLog = new NotificationLog();
 
-        Optional<UserModel> userModel = mUserRepo.findById(transactionDto.getUserId());
+        Optional<UserModel> userModel = mUserRepo.findById(transferDto.getUserId());
         final AccountModel debitAccount =
-                mAccountRepo.findAccountModelByIban(transactionDto.getDebitAccountNo());
+                mAccountRepo.findAccountModelByIban(transferDto.getDebitAccountNo());
 
         if (!userModel.isPresent()) {
 
@@ -71,26 +70,26 @@ public class TransactionService {
         }
 
         final AccountModel creditAccount =
-                mAccountRepo.findAccountModelByIban(transactionDto.getBenefAccountNo());
+                mAccountRepo.findAccountModelByIban(transferDto.getBenefAccountNo());
 
         final UserModel sender = debitAccount.getUserModel();
         final UserModel receiver = creditAccount.getUserModel();
 
         // Very if account is active not close or debit freeze
         boolean isAccountStatusVerified =
-                AccountVerificationUtil.verifyAccount(debitAccount, creditAccount);
+                BaseUtil.verifyAccount(debitAccount, creditAccount);
         log.info("::: Account Status verified: [{}] :::", isAccountStatusVerified);
 
         // Check if user meet tierLevel specification
         boolean isSenderTierLevelSatisfied =
-                TierLevelSpecUtil.validate(sender, transactionDto.getAmount());
+                TierLevelSpecUtil.validate(sender, transferDto.getAmount());
         log.info("::: Sender meet tierLeveL: [{}] :::", isSenderTierLevelSatisfied);
         boolean isReceiverTierLevelSatisfied =
-                TierLevelSpecUtil.validate(receiver, transactionDto.getAmount());
+                TierLevelSpecUtil.validate(receiver, transferDto.getAmount());
         log.info("::: Receiver meet tierLeveL: [{}] :::", isReceiverTierLevelSatisfied);
 
         // Verify if transaction request body is satisfied
-        boolean isTranferRequestSpecified = TransferSpecUtil.isSatisfied(transactionDto);
+        boolean isTranferRequestSpecified = BaseUtil.isTransferSatisfied(transferDto);
         log.info("::: Transaction request satisfied: [{}] :::", isTranferRequestSpecified);
 
         if (!isAccountStatusVerified || !isSenderTierLevelSatisfied || !isReceiverTierLevelSatisfied
@@ -99,14 +98,14 @@ public class TransactionService {
             throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
         }
 
-        TransactionModel transactionModel = TransactionMapper.mapToModel(transactionDto);
+        TransactionModel transactionModel = TransactionMapper.mapToModel(transferDto);
 
         AccountModel debitedAccount =
-                debitAccount.withdraw(transactionDto.getAmount());
+                debitAccount.withdraw(transferDto.getAmount());
 
         if (debitedAccount != null) {
             AccountModel creditedAccount =
-                    creditAccount.deposit(transactionDto.getAmount());
+                    creditAccount.deposit(transferDto.getAmount());
 
             mAccountRepo.save(debitedAccount);
             mAccountRepo.save(creditedAccount);
@@ -123,7 +122,7 @@ public class TransactionService {
                     String.format("Your account %s has been credit with sum of [%s%s] only ",
                                   creditAccount.getIban(),
                                   creditAccount.getCurrency(),
-                                  transactionDto.getAmount());
+                                  transferDto.getAmount());
             data.setMessage(notificationMessage);
             data.setRecipients(receipients);
             notificationLog.setData(data);
