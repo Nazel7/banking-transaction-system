@@ -57,7 +57,6 @@ public class TransactionService {
 
         try {
 
-
             String token = request.getHeader("Authorization");
             if (token.contains("Bearer")) {
                 token = token.split(" ")[1];
@@ -173,11 +172,10 @@ public class TransactionService {
             throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
         }
 
-
     }
 
 
-    public Account doFundAccount(TopupDto topupDto, HttpServletRequest request) throws AccountNotFoundException, IllegalAccessException {
+    public Account doFundAccount(TopupDto topupDto, HttpServletRequest request) throws  TransferNotValidException {
         log.info("::: In fundAccount.....");
 
         try {
@@ -308,6 +306,8 @@ public class TransactionService {
         }
 
     }
+
+
 
     // TODO: UPDATE FUND_ACCOUNT  AND TRANSFER_FUND SERVICE
     // TODO: DIRECT_DEBIT

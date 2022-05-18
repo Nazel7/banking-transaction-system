@@ -60,6 +60,8 @@ public class AccountModel {
 
     private String bvn;
 
+    private String accountType;
+
     private Boolean isLiquidated;
 
     @CreationTimestamp
@@ -82,11 +84,12 @@ public class AccountModel {
 
     }
 
-    public AccountModel(String iban, String currency, String status) {
+    public AccountModel(String iban, String currency, String status, String accountType) {
 
         this.iban = iban;
         this.currency = currency;
         this.status = status;
+        this.accountType = accountType;
     }
 
     public AccountModel deposit(BigDecimal amount) {

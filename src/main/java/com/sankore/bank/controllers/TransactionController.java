@@ -1,5 +1,6 @@
 package com.sankore.bank.controllers;
 
+import com.sankore.bank.dtos.request.WithrawalDto;
 import com.sankore.bank.services.TransactionService;
 import com.sankore.bank.dtos.response.Account;
 import com.sankore.bank.dtos.response.Transaction;
@@ -34,7 +35,7 @@ public class TransactionController {
     private final TransactionService mTransactionService;
 
     @CrossOrigin
-    @PostMapping(" ")
+    @PostMapping("/transfer")
     @ApiOperation(value = "::: transferFund :::", notes = "APi for fund transfer")
     @PreAuthorize("hasRole('CUSTOMER')")
    public ResponseEntity<Transaction>  transferFund(@RequestBody TransferDto transferDto, HttpServletRequest request)
@@ -48,12 +49,27 @@ public class TransactionController {
    @CrossOrigin
    @PreAuthorize("hasRole('CUSTOMER')")
    @ApiOperation(value = "::: fundAccount :::", notes = "Api for quick account topUp")
-   @PutMapping(" ")
+   @PutMapping("/savings")
 public ResponseEntity<Account>  fundAccount(@RequestBody TopupDto topupDto, HttpServletRequest request)
-           throws AccountNotFoundException, IllegalAccessException {
+           throws TransferNotValidException {
 
         final Account account= mTransactionService.doFundAccount(topupDto, request);
 
        return new ResponseEntity<>(account, HttpStatus.OK);
 }
+
+
+    @CrossOrigin
+    @PreAuthorize("hasRole('CUSTOMER')")
+    @ApiOperation(value = "::: fundAccount :::", notes = "Api for quick account topUp")
+    @PutMapping("/withdraw")
+    public ResponseEntity<Account>  withdrawAmount(@RequestBody WithrawalDto withrawalDto, HttpServletRequest request)
+            throws TransferNotValidException, AccountException, IllegalAccessException {
+
+        final Account account= mTransactionService.doFundWithdrawal(withrawalDto, request);
+
+        return new ResponseEntity<>(account, HttpStatus.OK);
+    }
+
+
 }

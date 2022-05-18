@@ -37,13 +37,12 @@ public class UserService {
         if (!BaseUtil.isRequestSatisfied(signUpDto)) {
 
             throw new UserNotFoundException("Unsatisfied request body");
-
         }
 
         UserModel userMapped = UserMapper.mapToModel(signUpDto);
         UserModel userModel = upgradeSigningUpUser(userMapped);
 
-        AccountModel accountModel = BaseUtil.generateAccountNumber(userModel);
+        AccountModel accountModel = BaseUtil.generateAccountNumber(userModel, signUpDto.getAccountType());
         accountModel.setUserModel(userModel);
         UserModel userModelSaved = mUserRepo.save(userModel);
         log.info("::: New user with id: [{}] saved to DB :::", userModelSaved.getId());

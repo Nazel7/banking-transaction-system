@@ -8,16 +8,18 @@ import com.sankore.bank.dtos.request.WithrawalDto;
 import com.sankore.bank.entities.models.AccountModel;
 import com.sankore.bank.entities.models.UserModel;
 import com.sankore.bank.enums.AccountStatus;
+import com.sankore.bank.enums.AccountType;
 import com.sankore.bank.enums.Currency;
 import lombok.extern.slf4j.Slf4j;
 
 import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.Objects;
 
 @Slf4j
 public class BaseUtil {
 
-    public static AccountModel generateAccountNumber(UserModel userModel) {
+    public static AccountModel generateAccountNumber(UserModel userModel, String accounType) {
 
         String[] num = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
 
@@ -29,10 +31,10 @@ public class BaseUtil {
         }
 
         String iban = sb.toString();
+        AccountType accountType = AccountType.getAccountType(accounType);
 
-        AccountModel accountModel = new AccountModel(iban,
-                Currency.NGN.name(),
-                AccountStatus.ACTIVE.name());
+        AccountModel accountModel = new AccountModel(iban, Currency.NGN.name(),
+                AccountStatus.ACTIVE.name(), accounType);
 
         log.info("::: Account with Iban: [{}] created for user with email: [{}]",
                 accountModel.getIban(),
@@ -52,6 +54,7 @@ public class BaseUtil {
             Objects.requireNonNull(signUpDto.getVerificationCode());
             Objects.requireNonNull(signUpDto.getPhone());
             Objects.requireNonNull(signUpDto.getEmail());
+            Objects.requireNonNull(signUpDto.getAccountType());
             boolean isEmailValid = TransactionObjFormatter.isEmailMatch(signUpDto.getEmail());
             boolean isPhoneNumValid = TransactionObjFormatter.isMatchNigerianPhoneNum(signUpDto.getPhone());
             if (!isEmailValid || isPhoneNumValid) {
