@@ -49,7 +49,13 @@ public class BaseUtil {
             Objects.requireNonNull(signUpDto.getVerificationCode());
             Objects.requireNonNull(signUpDto.getPhone());
             Objects.requireNonNull(signUpDto.getEmail());
+            boolean isEmailValid = TransactionObjFormatter.isEmailMatch(signUpDto.getEmail());
+            if (!isEmailValid) {
+                log.error("::: Email not valid");
+                return false;
+            }
             if (!signUpDto.getVerifiedPhone()) {
+                log.error("::: Phone not verified");
                 return false;
             }
 
