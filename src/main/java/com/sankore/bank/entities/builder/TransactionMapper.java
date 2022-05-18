@@ -10,6 +10,7 @@ public class TransactionMapper {
         return TransactionModel
                 .builder()
                 .amount(transferDto.getAmount())
+                .tranxRef(transferDto.getTranxRef())
                 .paymentReference(transferDto.getPaymentReference())
                 .benefAccountNo(transferDto.getBenefAccountNo())
                 .debitAccountNo(transferDto.getDebitAccountNo())
@@ -28,6 +29,7 @@ public class TransactionMapper {
                 .paymentReference(transactionModel.getPaymentReference())
                 .benefAccountNo(transactionModel.getBenefAccountNo())
                 .debitAccountNo(transactionModel.getDebitAccountNo())
+                .tranxRef(transactionModel.getTranxRef())
                 .tranCrncy(transactionModel.getTranCrncy())
                 .tranType(transactionModel.getTranType())
                 .tranNarration(transactionModel.getTranNarration())

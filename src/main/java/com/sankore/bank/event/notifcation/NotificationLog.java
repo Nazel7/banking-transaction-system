@@ -1,4 +1,4 @@
-package com.sankore.bank.entities.models;
+package com.sankore.bank.event.notifcation;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.sankore.bank.dtos.request.OriginatorKyc;
@@ -16,5 +16,7 @@ public class NotificationLog {
     private String eventType;
     private String initiator;
     private OriginatorKyc originatorKyc;
+    private String tranxRef;
+    private String channelCode;
 
 }

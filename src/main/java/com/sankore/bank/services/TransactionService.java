@@ -1,5 +1,6 @@
 package com.sankore.bank.services;
 
+import com.sankore.bank.auth.util.JwtUtil;
 import com.sankore.bank.configs.TranxMessageConfig;
 import com.sankore.bank.dtos.request.TopupDto;
 import com.sankore.bank.dtos.request.TransferDto;
@@ -10,7 +11,7 @@ import com.sankore.bank.dtos.response.UserNotFoundException;
 import com.sankore.bank.entities.builder.AccountMapper;
 import com.sankore.bank.entities.builder.TransactionMapper;
 import com.sankore.bank.entities.models.AccountModel;
-import com.sankore.bank.entities.models.NotificationLog;
+import com.sankore.bank.event.notifcation.NotificationLog;
 import com.sankore.bank.entities.models.TransactionModel;
 import com.sankore.bank.entities.models.UserModel;
 import com.sankore.bank.enums.TransType;
@@ -27,9 +28,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
 import javax.security.auth.login.AccountException;
 import javax.security.auth.login.AccountNotFoundException;
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -43,16 +46,24 @@ public class TransactionService {
     private final AccountRepo mAccountRepo;
     private final UserRepo mUserRepo;
     private final ApplicationEventPublisher mEventPublisher;
+    private final JwtUtil jwtUtil;
 
     private final TranxMessageConfig mMessageConfig;
 
-    public Transaction tranferFund(TransferDto transferDto)
+    public Transaction tranferFund(TransferDto transferDto, HttpServletRequest request)
             throws AccountException, TransferNotValidException, UserNotFoundException{
 
         DataInfo data = new DataInfo();
         Receipient receipient = new Receipient();
         List<Receipient> receipients = new ArrayList<>();
         NotificationLog notificationLog = new NotificationLog();
+
+        boolean isRequestValid = BaseUtil.isRequestSatisfied(transferDto);
+
+        if (!isRequestValid) {
+            log.error("::: Invalid Transfer request, please try again later.");
+            throw new TransferNotValidException("Invalid Transfer request, please try again later.");
+        }
 
         Optional<UserModel> userModel = mUserRepo.findById(transferDto.getUserId());
         final AccountModel debitAccount =
@@ -103,44 +114,48 @@ public class TransactionService {
         AccountModel debitedAccount =
                 debitAccount.withdraw(transferDto.getAmount());
 
-        if (debitedAccount != null) {
-            AccountModel creditedAccount =
-                    creditAccount.deposit(transferDto.getAmount());
-
-            mAccountRepo.save(debitedAccount);
-            mAccountRepo.save(creditedAccount);
-
-            log.info("::: Account with iban: [{}] has been debited ", debitedAccount.getIban());
-            log.info("::: Account with iban: [{}] has been credited ", creditedAccount.getIban());
-            log.info(mMessageConfig.getTransfer_successful());
-            TransactionModel savedTransaction = mTransactionRepo.save(transactionModel);
-
-            receipient.setEmail(creditAccount.getUserModel().getEmail());
-            receipient.setTelephone(creditAccount.getUserModel().getPhone());
-            receipients.add(receipient);
-            String notificationMessage =
-                    String.format("Your account %s has been credit with sum of [%s%s] only ",
-                                  creditAccount.getIban(),
-                                  creditAccount.getCurrency(),
-                                  transferDto.getAmount());
-            data.setMessage(notificationMessage);
-            data.setRecipients(receipients);
-            notificationLog.setData(data);
-            notificationLog.setEventType(TransType.TRANSFER.name());
-            String name= userModel.get().getFirstName().concat(" ").concat(userModel.get().getLastName());
-            notificationLog.setInitiator(name);
-
-            final NotificationLogEvent
-                    notificationLogEvent = new NotificationLogEvent(this, notificationLog);
-            mEventPublisher.publishEvent(notificationLogEvent);
-           log.info("::: notification sent to recipient: [{}] DB locator :::",
-                    notificationLogEvent.getNotificationLog());
-
-            return TransactionMapper.mapToDomain(savedTransaction);
-
+        if (debitedAccount == null) {
+            log.error("::: Transfer failed insufficient balance.");
+            throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
         }
 
-        throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
+        AccountModel creditedAccount =
+                creditAccount.deposit(transferDto.getAmount());
+
+        mAccountRepo.save(debitedAccount);
+        mAccountRepo.save(creditedAccount);
+
+        log.info("::: Account with iban: [{}] has been debited ", debitedAccount.getIban());
+        log.info("::: Account with iban: [{}] has been credited ", creditedAccount.getIban());
+        log.info(mMessageConfig.getTransfer_successful());
+        TransactionModel savedTransaction = mTransactionRepo.save(transactionModel);
+
+        receipient.setEmail(creditAccount.getUserModel().getEmail());
+        receipient.setTelephone(creditAccount.getUserModel().getPhone());
+        receipients.add(receipient);
+        String notificationMessage =
+                String.format("Your account %s has been credit with sum of [%s%s] only ",
+                        creditAccount.getIban(),
+                        creditAccount.getCurrency(),
+                        transferDto.getAmount());
+        data.setMessage(notificationMessage);
+        data.setRecipients(receipients);
+        notificationLog.setData(data);
+        notificationLog.setTranxRef(transferDto.getTranxRef());
+        notificationLog.setChannelCode(transferDto.getChannelCode());
+
+        notificationLog.setEventType(TransType.TRANSFER.name());
+        String name= userModel.get().getFirstName().concat(" ").concat(userModel.get().getLastName());
+        notificationLog.setInitiator(name);
+
+        final NotificationLogEvent
+                notificationLogEvent = new NotificationLogEvent(this, notificationLog);
+        mEventPublisher.publishEvent(notificationLogEvent);
+        log.info("::: notification sent to recipient: [{}] DB locator :::",
+                notificationLogEvent.getNotificationLog());
+
+        return TransactionMapper.mapToDomain(savedTransaction);
+
     }
 
 

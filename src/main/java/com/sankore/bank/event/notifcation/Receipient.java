@@ -5,6 +5,7 @@ import lombok.Data;
 @Data
 public class Receipient {
 
-    String email;
-    String telephone;
+    private String email;
+    private String telephone;
+
 }

@@ -33,7 +33,7 @@ public class UserService {
 
     public User registerUser(final SignUpDto signUpDto) throws UserNotFoundException {
 
-        if (!BaseUtil.isSignUpSatisfied(signUpDto)) {
+        if (!BaseUtil.isRequestSatisfied(signUpDto)) {
 
             throw new UserNotFoundException("Unsatisfied request body");
 

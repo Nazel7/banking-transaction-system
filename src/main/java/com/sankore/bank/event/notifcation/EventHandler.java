@@ -1,7 +1,5 @@
 package com.sankore.bank.event.notifcation;
 
-import com.sankore.bank.entities.models.NotificationLog;
-
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

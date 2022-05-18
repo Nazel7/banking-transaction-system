@@ -17,4 +17,5 @@ public class Transaction {
     private final String tranNarration;
     private final String tranType;
     private final Long userId;
+    private final String tranxRef;
 }

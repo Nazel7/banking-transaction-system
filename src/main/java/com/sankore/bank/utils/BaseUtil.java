@@ -2,12 +2,14 @@ package com.sankore.bank.utils;
 
 import com.sankore.bank.dtos.request.SignUpDto;
 import com.sankore.bank.dtos.request.TransferDto;
+import com.sankore.bank.dtos.response.TransferNotValidException;
 import com.sankore.bank.entities.models.AccountModel;
 import com.sankore.bank.entities.models.UserModel;
 import com.sankore.bank.enums.AccountStatus;
 import com.sankore.bank.enums.Currency;
 import lombok.extern.slf4j.Slf4j;
 
+import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.util.Objects;
 
@@ -39,7 +41,7 @@ public class BaseUtil {
 
     }
 
-    public static boolean isSignUpSatisfied(SignUpDto signUpDto) {
+    public static boolean isRequestSatisfied(SignUpDto signUpDto) {
         try{
 
             Objects.requireNonNull(signUpDto.getFirstName());
@@ -50,8 +52,9 @@ public class BaseUtil {
             Objects.requireNonNull(signUpDto.getPhone());
             Objects.requireNonNull(signUpDto.getEmail());
             boolean isEmailValid = TransactionObjFormatter.isEmailMatch(signUpDto.getEmail());
-            if (!isEmailValid) {
-                log.error("::: Email not valid");
+            boolean isPhoneNumValid = TransactionObjFormatter.isMatchNigerianPhoneNum(signUpDto.getPhone());
+            if (!isEmailValid || isPhoneNumValid) {
+                log.error("::: Email| PhoneNum not valid");
                 return false;
             }
             if (!signUpDto.getVerifiedPhone()) {
@@ -69,6 +72,31 @@ public class BaseUtil {
         }
 
     }
+
+    public static boolean isRequestSatisfied(TransferDto transferDto) {
+        try{
+
+            Objects.requireNonNull(transferDto.getAmount());
+            Objects.requireNonNull(transferDto.getBenefAccountNo());
+            Objects.requireNonNull(transferDto.getDebitAccountNo());
+            Objects.requireNonNull(transferDto.getPaymentReference());
+            Objects.requireNonNull(transferDto.getTranxRef());
+            Objects.requireNonNull(transferDto.getTranCrncy());
+            Objects.requireNonNull(transferDto.getTranType());
+            Objects.requireNonNull(transferDto.getChannelCode());
+            Objects.requireNonNull(transferDto.getUserId());
+
+            log.info("::: Satisfied requestBody: [{}] :::", transferDto);
+            return true;
+
+        } catch (NullPointerException ex) {
+            ex.printStackTrace();
+            log.debug("::: Unsatisfied requestBody [{}]:::", transferDto);
+            return false;
+        }
+
+    }
+
 
     public static boolean isTransferSatisfied(TransferDto transaction) {
         try {

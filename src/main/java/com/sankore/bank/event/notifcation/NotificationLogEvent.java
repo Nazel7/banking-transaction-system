@@ -1,7 +1,5 @@
 package com.sankore.bank.event.notifcation;
 
-import com.sankore.bank.entities.models.NotificationLog;
-
 import org.springframework.context.ApplicationEvent;
 
 import lombok.ToString;
