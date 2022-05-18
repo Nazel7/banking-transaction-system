@@ -2,6 +2,7 @@ package com.sankore.bank.services;
 
 import com.sankore.bank.auth.util.JwtUtil;
 import com.sankore.bank.configs.TranxMessageConfig;
+import com.sankore.bank.contants.ChannelConsts;
 import com.sankore.bank.dtos.request.TopupDto;
 import com.sankore.bank.dtos.request.TransferDto;
 import com.sankore.bank.dtos.request.WithrawalDto;
@@ -34,9 +35,8 @@ import org.springframework.stereotype.Service;
 import javax.security.auth.login.AccountException;
 import javax.security.auth.login.AccountNotFoundException;
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -176,6 +176,7 @@ public class TransactionService {
         if (token.contains("Bearer")) {
             token = token.split(" ")[1];
         }
+        NotificationLog notificationLog = new NotificationLog();
         boolean isRequestValid = BaseUtil.isRequestSatisfied(topupDto);
 
         if (!isRequestValid) {
@@ -196,6 +197,18 @@ public class TransactionService {
         log.info("Account with iban: [{}] topped up", topedAccount.getIban());
         mAccountRepo.save(creditAccount);
         return AccountMapper.mapToDomain(topedAccount, TranxStatus.SUCCESSFUL.name());
+
+        notificationLog.setInitiator();
+        notificationLog.setEventType(TransType.WITHDRAWAL.name());
+        notificationLog.setChannelCode(ChannelConsts.VENDOR_CHANNEL);
+        notificationLog.setTranxDate(new Date());
+        notificationLog.setTranxRef("FW" + UUID.randomUUID().toString());
+
+        final NotificationLogEvent
+                notificationLogEvent = new NotificationLogEvent(this, notificationLog);
+        mEventPublisher.publishEvent(notificationLogEvent);
+        log.info("::: notification sent to recipient: [{}] DB locator :::",
+                notificationLogEvent.getNotificationLog());
     }
 
 
@@ -251,7 +264,19 @@ public class TransactionService {
         TransactionModel savedLogModel = mTransactionRepo.save(transactionModel);
         log.info("::: FundWithdrawal LogModel audited successfully with paylaod: [{}]",savedLogModel);
 
-        notificationLog.setInitiator();
+        notificationLog.setInitiator(debitedAccountSaved.getUserModel().getFirstName().concat(" ")
+                .concat(debitedAccountSaved.getUserModel().getLastName()));
+        notificationLog.setEventType(TransType.WITHDRAWAL.name());
+        notificationLog.setChannelCode(ChannelConsts.VENDOR_CHANNEL);
+        notificationLog.setTranxDate(new Date());
+        notificationLog.setTranxRef("FW" + UUID.randomUUID().toString());
+
+        final NotificationLogEvent
+                notificationLogEvent = new NotificationLogEvent(this, notificationLog);
+        mEventPublisher.publishEvent(notificationLogEvent);
+        log.info("::: notification sent to recipient: [{}] DB locator :::",
+                notificationLogEvent.getNotificationLog());
+
 
 
     }
