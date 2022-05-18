@@ -7,6 +7,8 @@ import com.sankore.bank.event.notifcation.DataInfo;
 import lombok.Data;
 import org.aspectj.weaver.ast.Or;
 
+import java.util.Date;
+
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class NotificationLog {
@@ -18,5 +20,6 @@ public class NotificationLog {
     private OriginatorKyc originatorKyc;
     private String tranxRef;
     private String channelCode;
+    private Date tranxDate;
 
 }

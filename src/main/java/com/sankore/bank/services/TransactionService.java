@@ -51,6 +51,7 @@ public class TransactionService {
 
     public Transaction tranferFund(TransferDto transferDto, HttpServletRequest request)
             throws AccountException, TransferNotValidException, UserNotFoundException {
+        log.info("::: In tranferFund.....");
 
         String token = request.getHeader("Authorization");
         if (token.contains("Bearer")) {
@@ -149,6 +150,7 @@ public class TransactionService {
         notificationLog.setData(data);
         notificationLog.setTranxRef(transferDto.getTranxRef());
         notificationLog.setChannelCode(transferDto.getChannelCode());
+        notificationLog.setTranxDate(savedTransaction.getPerformedAt());
 
         notificationLog.setEventType(TransType.TRANSFER.name());
         String name = userModel.get().getFirstName().concat(" ").concat(userModel.get().getLastName());
@@ -165,7 +167,21 @@ public class TransactionService {
     }
 
 
-    public Account fundAccount(TopupDto topupDto) throws AccountNotFoundException {
+    public Account fundAccount(TopupDto topupDto, HttpServletRequest request) throws AccountNotFoundException {
+        log.info("::: In fundAccount.....");
+        String token = request.getHeader("Authorization");
+        if (token.contains("Bearer")) {
+            token = token.split(" ")[1];
+        }
+        boolean isRequestValid = BaseUtil.isRequestSatisfied(topupDto);
+
+        if (!isRequestValid) {
+            log.error("::: TopUp request error with payload: [{}]", topupDto);
+            throw new IllegalArgumentException("TopUp request error with payload");
+        }
+
+        String userName =
+
         final AccountModel creditAccount =
                 mAccountRepo.findAccountModelByIban(topupDto.getIban());
         AccountModel topedAccount = creditAccount.deposit(topupDto.getAmount());

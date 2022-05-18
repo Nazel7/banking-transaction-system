@@ -23,6 +23,7 @@ import java.io.NotActiveException;
 
 import javax.security.auth.login.AccountException;
 import javax.security.auth.login.AccountNotFoundException;
+import javax.servlet.http.HttpServletRequest;
 
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -38,11 +39,10 @@ public class TransactionController {
     @PostMapping(" ")
     @ApiOperation(value = "::: transferFund :::", notes = "APi for fund transfer")
     @PreAuthorize("hasRole('CUSTOMER')")
-   public ResponseEntity<Transaction>  transferFund(@RequestBody TransferDto transferDto)
-            throws AccountException, TransferNotValidException, UserNotFoundException,
-                   NotActiveException {
+   public ResponseEntity<Transaction>  transferFund(@RequestBody TransferDto transferDto, HttpServletRequest request)
+            throws AccountException, TransferNotValidException, UserNotFoundException {
 
-       final Transaction transaction= mTransactionService.tranferFund(transferDto);
+       final Transaction transaction= mTransactionService.tranferFund(transferDto, request);
 
        return new ResponseEntity<>(transaction, HttpStatus.OK);
    }

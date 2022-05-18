@@ -1,15 +1,14 @@
 package com.sankore.bank.utils;
 
 import com.sankore.bank.dtos.request.SignUpDto;
+import com.sankore.bank.dtos.request.TopupDto;
 import com.sankore.bank.dtos.request.TransferDto;
-import com.sankore.bank.dtos.response.TransferNotValidException;
 import com.sankore.bank.entities.models.AccountModel;
 import com.sankore.bank.entities.models.UserModel;
 import com.sankore.bank.enums.AccountStatus;
 import com.sankore.bank.enums.Currency;
 import lombok.extern.slf4j.Slf4j;
 
-import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.util.Objects;
 
@@ -97,6 +96,27 @@ public class BaseUtil {
 
     }
 
+    public static boolean isRequestSatisfied(TopupDto topupDto) {
+        try{
+
+            Objects.requireNonNull(topupDto.getAmount());
+            Objects.requireNonNull(topupDto.getIban());
+            Objects.requireNonNull(topupDto.getChannelCode());
+            Objects.requireNonNull(topupDto.getTranxRef());
+            Objects.requireNonNull(topupDto.getTranxType());
+            Objects.requireNonNull(topupDto.getChannelCode());
+
+
+            log.info("::: Satisfied requestBody: [{}] :::", topupDto);
+            return true;
+
+        } catch (NullPointerException ex) {
+            ex.printStackTrace();
+            log.debug("::: Unsatisfied requestBody [{}]:::", topupDto);
+            return false;
+        }
+
+    }
 
     public static boolean isTransferSatisfied(TransferDto transaction) {
         try {
