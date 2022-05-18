@@ -55,116 +55,124 @@ public class TransactionService {
             throws AccountException, TransferNotValidException, UserNotFoundException {
         log.info("::: In tranferFund.....");
 
-        String token = request.getHeader("Authorization");
-        if (token.contains("Bearer")) {
-            token = token.split(" ")[1];
-        }
+        try {
 
-        DataInfo data = new DataInfo();
-        Receipient receipient = new Receipient();
-        List<Receipient> receipients = new ArrayList<>();
-        NotificationLog notificationLog = new NotificationLog();
 
-        boolean isRequestValid = BaseUtil.isRequestSatisfied(transferDto);
+            String token = request.getHeader("Authorization");
+            if (token.contains("Bearer")) {
+                token = token.split(" ")[1];
+            }
 
-        if (!isRequestValid) {
-            log.error("::: Invalid Transfer request, please try again later.");
-            throw new TransferNotValidException("Invalid Transfer request, please try again later.");
-        }
+            DataInfo data = new DataInfo();
+            Receipient receipient = new Receipient();
+            List<Receipient> receipients = new ArrayList<>();
+            NotificationLog notificationLog = new NotificationLog();
 
-        Optional<UserModel> userModel = mUserRepo.findById(transferDto.getUserId());
-        final AccountModel debitAccount =
-                mAccountRepo.findAccountModelByIban(transferDto.getDebitAccountNo());
+            boolean isRequestValid = BaseUtil.isRequestSatisfied(transferDto);
 
-        if (userModel.isEmpty()) {
+            if (!isRequestValid) {
+                log.error("::: Invalid Transfer request, please try again later.");
+                throw new TransferNotValidException("Invalid Transfer request, please try again later.");
+            }
 
-            log.error("::: User not found with body");
-            throw new UserNotFoundException("User not found ");
-        }
+            Optional<UserModel> userModel = mUserRepo.findById(transferDto.getUserId());
+            final AccountModel debitAccount =
+                    mAccountRepo.findAccountModelByIban(transferDto.getDebitAccountNo());
 
-        if (!userModel.get().equals(debitAccount.getUserModel())) {
+            if (userModel.isEmpty()) {
 
-            log.error("::: user account not valid, Account: [{}] :::", debitAccount);
-            throw new AccountNotFoundException("User account not valid");
-        }
+                log.error("::: User not found with body");
+                throw new UserNotFoundException("User not found ");
+            }
 
-        final AccountModel creditAccount =
-                mAccountRepo.findAccountModelByIban(transferDto.getBenefAccountNo());
+            if (!userModel.get().equals(debitAccount.getUserModel())) {
 
-        final UserModel sender = debitAccount.getUserModel();
-        final UserModel receiver = creditAccount.getUserModel();
+                log.error("::: user account not valid, Account: [{}] :::", debitAccount);
+                throw new AccountNotFoundException("User account not valid");
+            }
 
-        // Very if account is active not close or debit freeze
-        boolean isAccountStatusVerified =
-                BaseUtil.verifyAccount(debitAccount, creditAccount);
-        log.info("::: Account Status verified: [{}] :::", isAccountStatusVerified);
+            final AccountModel creditAccount =
+                    mAccountRepo.findAccountModelByIban(transferDto.getBenefAccountNo());
 
-        // Check if user meet tierLevel specification
-        boolean isSenderTierLevelSatisfied =
-                TierLevelSpecUtil.validate(sender, transferDto.getAmount());
-        log.info("::: Sender meet tierLeveL: [{}] :::", isSenderTierLevelSatisfied);
-        boolean isReceiverTierLevelSatisfied =
-                TierLevelSpecUtil.validate(receiver, transferDto.getAmount());
-        log.info("::: Receiver meet tierLeveL: [{}] :::", isReceiverTierLevelSatisfied);
+            final UserModel sender = debitAccount.getUserModel();
+            final UserModel receiver = creditAccount.getUserModel();
 
-        // Verify if transaction request body is satisfied
-        boolean isTranferRequestSpecified = BaseUtil.isTransferSatisfied(transferDto);
-        log.info("::: Transaction request satisfied: [{}] :::", isTranferRequestSpecified);
+            // Very if account is active not close or debit freeze
+            boolean isAccountStatusVerified =
+                    BaseUtil.verifyAccount(debitAccount, creditAccount);
+            log.info("::: Account Status verified: [{}] :::", isAccountStatusVerified);
 
-        if (!isAccountStatusVerified || !isSenderTierLevelSatisfied || !isReceiverTierLevelSatisfied
-                || !isTranferRequestSpecified) {
-            log.info("::: Transaction failed");
+            // Check if user meet tierLevel specification
+            boolean isSenderTierLevelSatisfied =
+                    TierLevelSpecUtil.validate(sender, transferDto.getAmount());
+            log.info("::: Sender meet tierLeveL: [{}] :::", isSenderTierLevelSatisfied);
+            boolean isReceiverTierLevelSatisfied =
+                    TierLevelSpecUtil.validate(receiver, transferDto.getAmount());
+            log.info("::: Receiver meet tierLeveL: [{}] :::", isReceiverTierLevelSatisfied);
+
+            // Verify if transaction request body is satisfied
+            boolean isTranferRequestSpecified = BaseUtil.isTransferSatisfied(transferDto);
+            log.info("::: Transaction request satisfied: [{}] :::", isTranferRequestSpecified);
+
+            if (!isAccountStatusVerified || !isSenderTierLevelSatisfied || !isReceiverTierLevelSatisfied
+                    || !isTranferRequestSpecified) {
+                log.info("::: Transaction failed");
+                throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
+            }
+
+            final TransactionModel transactionModel = TransactionMapper.mapToModel(transferDto, token);
+
+            AccountModel debitedAccount =
+                    debitAccount.withdraw(transferDto.getAmount());
+
+            if (debitedAccount == null) {
+                log.error("::: Transfer failed insufficient balance.");
+                throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
+            }
+
+            final AccountModel creditedAccount = creditAccount.deposit(transferDto.getAmount());
+
+            mAccountRepo.save(debitedAccount);
+            mAccountRepo.save(creditedAccount);
+
+            log.info("::: Account has been debited with iban: [{}]", debitedAccount.getIban());
+            log.info("::: Account has been credited with iban: [{}] ", creditedAccount.getIban());
+            log.info(mMessageConfig.getTransfer_successful());
+            TransactionModel savedTransaction = mTransactionRepo.save(transactionModel);
+            log.info("::: FundTransfer LogModel audited successfully");
+
+            receipient.setEmail(creditAccount.getUserModel().getEmail());
+            receipient.setTelephone(creditAccount.getUserModel().getPhone());
+            receipients.add(receipient);
+            String notificationMessage =
+                    String.format("Your account %s has been credit with sum of [%s%s] only ",
+                            creditAccount.getIban(),
+                            creditAccount.getCurrency(),
+                            transferDto.getAmount());
+            data.setMessage(notificationMessage);
+            data.setRecipients(receipients);
+            notificationLog.setData(data);
+            notificationLog.setTranxRef(transferDto.getTranxRef());
+            notificationLog.setChannelCode(transferDto.getChannelCode());
+            notificationLog.setTranxDate(savedTransaction.getPerformedAt());
+
+            notificationLog.setEventType(TransType.TRANSFER.name());
+            String name = userModel.get().getFirstName().concat(" ").concat(userModel.get().getLastName());
+            notificationLog.setInitiator(name);
+
+            final NotificationLogEvent
+                    notificationLogEvent = new NotificationLogEvent(this, notificationLog);
+            mEventPublisher.publishEvent(notificationLogEvent);
+            log.info("::: notification sent to recipient: [{}] DB locator :::",
+                    notificationLogEvent.getNotificationLog());
+
+            return TransactionMapper.mapToDomain(savedTransaction);
+
+        }catch (Exception ex) {
+            ex.printStackTrace();
             throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
         }
 
-
-        final TransactionModel transactionModel = TransactionMapper.mapToModel(transferDto, token);
-
-        AccountModel debitedAccount =
-                debitAccount.withdraw(transferDto.getAmount());
-
-        if (debitedAccount == null) {
-            log.error("::: Transfer failed insufficient balance.");
-            throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
-        }
-
-        final AccountModel creditedAccount = creditAccount.deposit(transferDto.getAmount());
-
-        mAccountRepo.save(debitedAccount);
-        mAccountRepo.save(creditedAccount);
-
-        log.info("::: Account has been debited with iban: [{}]", debitedAccount.getIban());
-        log.info("::: Account has been credited with iban: [{}] ", creditedAccount.getIban());
-        log.info(mMessageConfig.getTransfer_successful());
-        TransactionModel savedTransaction = mTransactionRepo.save(transactionModel);
-        log.info("::: FundTransfer LogModel audited successfully");
-
-        receipient.setEmail(creditAccount.getUserModel().getEmail());
-        receipient.setTelephone(creditAccount.getUserModel().getPhone());
-        receipients.add(receipient);
-        String notificationMessage =
-                String.format("Your account %s has been credit with sum of [%s%s] only ",
-                        creditAccount.getIban(),
-                        creditAccount.getCurrency(),
-                        transferDto.getAmount());
-        data.setMessage(notificationMessage);
-        data.setRecipients(receipients);
-        notificationLog.setData(data);
-        notificationLog.setTranxRef(transferDto.getTranxRef());
-        notificationLog.setChannelCode(transferDto.getChannelCode());
-        notificationLog.setTranxDate(savedTransaction.getPerformedAt());
-
-        notificationLog.setEventType(TransType.TRANSFER.name());
-        String name = userModel.get().getFirstName().concat(" ").concat(userModel.get().getLastName());
-        notificationLog.setInitiator(name);
-
-        final NotificationLogEvent
-                notificationLogEvent = new NotificationLogEvent(this, notificationLog);
-        mEventPublisher.publishEvent(notificationLogEvent);
-        log.info("::: notification sent to recipient: [{}] DB locator :::",
-                notificationLogEvent.getNotificationLog());
-
-        return TransactionMapper.mapToDomain(savedTransaction);
 
     }
 
@@ -172,112 +180,132 @@ public class TransactionService {
     public Account doFundAccount(TopupDto topupDto, HttpServletRequest request) throws AccountNotFoundException, IllegalAccessException {
         log.info("::: In fundAccount.....");
 
-        String token = request.getHeader("Authorization");
-        if (token.contains("Bearer")) {
-            token = token.split(" ")[1];
+        try {
+
+            String token = request.getHeader("Authorization");
+            if (token.contains("Bearer")) {
+                token = token.split(" ")[1];
+            }
+            NotificationLog notificationModel = new NotificationLog();
+            boolean isRequestValid = BaseUtil.isRequestSatisfied(topupDto);
+
+            if (!isRequestValid) {
+                log.error("::: TopUp request error with payload: [{}]", topupDto);
+                throw new IllegalArgumentException("TopUp request error with payload");
+            }
+
+            final AccountModel creditAccount =
+                    mAccountRepo.findAccountModelByIban(topupDto.getIban());
+
+            log.info("::: About to validate Account owner.....");
+            String userName = jwtUtil.extractUsername(token);
+            if (!userName.equals(creditAccount.getUserModel().getEmail())) {
+                log.error("::: Account broken, Invalid Account access");
+                throw new IllegalAccessException("Account broken, Invalid Account access");
+            }
+            AccountModel topedAccount = creditAccount.deposit(topupDto.getAmount());
+            log.info("Account with iban: [{}] topped up", topedAccount.getIban());
+            mAccountRepo.save(creditAccount);
+
+            notificationModel.setInitiator(topedAccount.getUserModel().getFirstName().concat(" ")
+                    .concat(topedAccount.getUserModel().getLastName()));
+            notificationModel.setEventType(TransType.DEPOSIT.name());
+            notificationModel.setChannelCode(ChannelConsts.VENDOR_CHANNEL);
+            notificationModel.setTranxDate(new Date());
+            notificationModel.setTranxRef("FW" + UUID.randomUUID().toString());
+
+            final NotificationLogEvent eventLog = new NotificationLogEvent(this, notificationModel);
+            mEventPublisher.publishEvent(eventLog);
+            log.info("::: notification sent to recipient: [{}] DB locator :::",
+                    eventLog.getNotificationLog());
+
+            return AccountMapper.mapToDomain(topedAccount, TranxStatus.SUCCESSFUL.name());
+
+
+        }catch (Exception ex) {
+            ex.printStackTrace();
+            throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
         }
-        NotificationLog notificationLog = new NotificationLog();
-        boolean isRequestValid = BaseUtil.isRequestSatisfied(topupDto);
 
-        if (!isRequestValid) {
-            log.error("::: TopUp request error with payload: [{}]", topupDto);
-            throw new IllegalArgumentException("TopUp request error with payload");
-        }
 
-        final AccountModel creditAccount =
-                mAccountRepo.findAccountModelByIban(topupDto.getIban());
-
-        log.info("::: About to validate Account owner.....");
-        String userName = jwtUtil.extractUsername(token);
-        if (!userName.equals(creditAccount.getUserModel().getEmail())) {
-            log.error("::: Account broken, Invalid Account access");
-            throw new IllegalAccessException("Account broken, Invalid Account access");
-        }
-        AccountModel topedAccount = creditAccount.deposit(topupDto.getAmount());
-        log.info("Account with iban: [{}] topped up", topedAccount.getIban());
-        mAccountRepo.save(creditAccount);
-        return AccountMapper.mapToDomain(topedAccount, TranxStatus.SUCCESSFUL.name());
-
-        notificationLog.setInitiator();
-        notificationLog.setEventType(TransType.WITHDRAWAL.name());
-        notificationLog.setChannelCode(ChannelConsts.VENDOR_CHANNEL);
-        notificationLog.setTranxDate(new Date());
-        notificationLog.setTranxRef("FW" + UUID.randomUUID().toString());
-
-        final NotificationLogEvent
-                notificationLogEvent = new NotificationLogEvent(this, notificationLog);
-        mEventPublisher.publishEvent(notificationLogEvent);
-        log.info("::: notification sent to recipient: [{}] DB locator :::",
-                notificationLogEvent.getNotificationLog());
     }
 
 
     public Account doFundWithdrawal(WithrawalDto withrawalDto, HttpServletRequest request) throws AccountException, IllegalAccessException, TransferNotValidException {
         log.info("::: In doFundWithdrawal.....");
-        String token = request.getHeader("Authorization");
-        if (token.contains("Bearer")) {
-            token = token.split(" ")[1];
-        }
-        NotificationLog notificationLog = new NotificationLog();
-        boolean isRequestValid = BaseUtil.isRequestSatisfied(withrawalDto);
-        if (!isRequestValid) {
-            log.error("::: FundWithdrawal request error with payload: [{}]", withrawalDto);
-            throw new IllegalArgumentException("TopUp request error with payload");
-        }
 
-        AccountModel accountModel = mAccountRepo.findAccountModelByIban(withrawalDto.getIban());
+        try {
 
-        log.info("::: About to validate Account owner.....");
-        String userName = jwtUtil.extractUsername(token);
-        if (!userName.equals(accountModel.getUserModel().getEmail())) {
-            log.error("::: Account broken, Invalid Account access");
-            throw new IllegalAccessException("Account broken, Invalid Account access");
-        }
+            String token = request.getHeader("Authorization");
+            if (token.contains("Bearer")) {
+                token = token.split(" ")[1];
+            }
+            NotificationLog notificationLog = new NotificationLog();
+            boolean isRequestValid = BaseUtil.isRequestSatisfied(withrawalDto);
+            if (!isRequestValid) {
+                log.error("::: FundWithdrawal request error with payload: [{}]", withrawalDto);
+                throw new IllegalArgumentException("TopUp request error with payload");
+            }
 
-        // Very if account is active not close or debit freeze
-        boolean isAccountStatusVerified =
-                BaseUtil.verifyAccount(accountModel);
-        log.info("::: Account Status verified: [{}] :::", isAccountStatusVerified);
+            AccountModel accountModel = mAccountRepo.findAccountModelByIban(withrawalDto.getIban());
 
-        // Check if user meet tierLevel specification
-        boolean isTierLevelSatisfied =
-                TierLevelSpecUtil.validate(accountModel.getUserModel(), withrawalDto.getAmount());
-        log.info(":::  Account tierLeveL satisfied: [{}] :::", isTierLevelSatisfied);
+            log.info("::: About to validate Account owner.....");
+            String userName = jwtUtil.extractUsername(token);
+            if (!userName.equals(accountModel.getUserModel().getEmail())) {
+                log.error("::: Account broken, Invalid Account access");
+                throw new IllegalAccessException("Account broken, Invalid Account access");
+            }
 
-        if (!isAccountStatusVerified) {
-            log.info("::: Transaction failed");
+            // Very if account is active not close or debit freeze
+            boolean isAccountStatusVerified =
+                    BaseUtil.verifyAccount(accountModel);
+            log.info("::: Account Status verified: [{}] :::", isAccountStatusVerified);
+
+            // Check if user meet tierLevel specification
+            boolean isTierLevelSatisfied =
+                    TierLevelSpecUtil.validate(accountModel.getUserModel(), withrawalDto.getAmount());
+            log.info(":::  Account tierLeveL satisfied: [{}] :::", isTierLevelSatisfied);
+
+            if (!isAccountStatusVerified) {
+                log.info("::: Transaction failed");
+                throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
+            }
+
+            final TransactionModel transactionModel = TransactionMapper.mapToModel(withrawalDto, token);
+
+            final AccountModel debitedAccount = accountModel.withdraw(withrawalDto.getAmount());
+
+            if (debitedAccount == null) {
+                log.error("::: Transfer failed insufficient balance.");
+                throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
+            }
+
+            AccountModel debitedAccountSaved = mAccountRepo.save(debitedAccount);
+            log.info("::: Account debit updated successfully with payload`; [{}]", debitedAccountSaved);
+
+            TransactionModel savedLogModel = mTransactionRepo.save(transactionModel);
+            log.info("::: FundWithdrawal LogModel audited successfully with paylaod: [{}]",savedLogModel);
+
+            notificationLog.setInitiator(debitedAccountSaved.getUserModel().getFirstName().concat(" ")
+                    .concat(debitedAccountSaved.getUserModel().getLastName()));
+            notificationLog.setEventType(TransType.WITHDRAWAL.name());
+            notificationLog.setChannelCode(ChannelConsts.VENDOR_CHANNEL);
+            notificationLog.setTranxDate(new Date());
+            notificationLog.setTranxRef("FW" + UUID.randomUUID().toString());
+
+            final NotificationLogEvent
+                    notificationLogEvent = new NotificationLogEvent(this, notificationLog);
+            mEventPublisher.publishEvent(notificationLogEvent);
+            log.info("::: notification sent to recipient: [{}] DB locator :::",
+                    notificationLogEvent.getNotificationLog());
+
+            return AccountMapper.mapToDomain(debitedAccount, TranxStatus.SUCCESSFUL.name());
+
+
+        }catch (Exception ex) {
+            ex.printStackTrace();
             throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
         }
-
-        final TransactionModel transactionModel = TransactionMapper.mapToModel(withrawalDto, token);
-
-        final AccountModel debitedAccount = accountModel.withdraw(withrawalDto.getAmount());
-
-        if (debitedAccount == null) {
-            log.error("::: Transfer failed insufficient balance.");
-            throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
-        }
-
-        AccountModel debitedAccountSaved = mAccountRepo.save(debitedAccount);
-        log.info("::: Account debit updated successfully with payload`; [{}]", debitedAccountSaved);
-
-        TransactionModel savedLogModel = mTransactionRepo.save(transactionModel);
-        log.info("::: FundWithdrawal LogModel audited successfully with paylaod: [{}]",savedLogModel);
-
-        notificationLog.setInitiator(debitedAccountSaved.getUserModel().getFirstName().concat(" ")
-                .concat(debitedAccountSaved.getUserModel().getLastName()));
-        notificationLog.setEventType(TransType.WITHDRAWAL.name());
-        notificationLog.setChannelCode(ChannelConsts.VENDOR_CHANNEL);
-        notificationLog.setTranxDate(new Date());
-        notificationLog.setTranxRef("FW" + UUID.randomUUID().toString());
-
-        final NotificationLogEvent
-                notificationLogEvent = new NotificationLogEvent(this, notificationLog);
-        mEventPublisher.publishEvent(notificationLogEvent);
-        log.info("::: notification sent to recipient: [{}] DB locator :::",
-                notificationLogEvent.getNotificationLog());
-
-
 
     }
 
