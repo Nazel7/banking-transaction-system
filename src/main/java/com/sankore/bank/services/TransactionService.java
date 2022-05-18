@@ -167,7 +167,7 @@ public class TransactionService {
     }
 
 
-    public Account fundAccount(TopupDto topupDto, HttpServletRequest request) throws AccountNotFoundException {
+    public Account fundAccount(TopupDto topupDto, HttpServletRequest request) throws AccountNotFoundException, IllegalAccessException {
         log.info("::: In fundAccount.....");
         String token = request.getHeader("Authorization");
         if (token.contains("Bearer")) {
@@ -180,10 +180,15 @@ public class TransactionService {
             throw new IllegalArgumentException("TopUp request error with payload");
         }
 
-        String userName =
-
         final AccountModel creditAccount =
                 mAccountRepo.findAccountModelByIban(topupDto.getIban());
+
+        log.info("::: About to validate Account owner.....");
+        String userName = jwtUtil.extractUsername(token);
+        if (!userName.equals(creditAccount.getUserModel().getEmail())) {
+            log.error("::: Account broken, Invalid Account access");
+            throw new IllegalAccessException("Account broken, Invalid Account access");
+        }
         AccountModel topedAccount = creditAccount.deposit(topupDto.getAmount());
         log.info("Account with iban: [{}] topped up", topedAccount.getIban());
         mAccountRepo.save(creditAccount);
