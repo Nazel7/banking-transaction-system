@@ -1,5 +1,6 @@
 package com.sankore.bank.utils;
 
+import com.sankore.bank.contants.ChannelConsts;
 import com.sankore.bank.dtos.request.SignUpDto;
 import com.sankore.bank.dtos.request.TopupDto;
 import com.sankore.bank.dtos.request.TransferDto;
@@ -105,6 +106,14 @@ public class BaseUtil {
             Objects.requireNonNull(topupDto.getTranxRef());
             Objects.requireNonNull(topupDto.getTranxType());
             Objects.requireNonNull(topupDto.getChannelCode());
+            if (ChannelConsts.ATM_CHANNEL.equals(topupDto.getChannelCode()) ||
+                    ChannelConsts.NIBSS_CHANNEL.equals(topupDto.getChannelCode()) ||
+                    ChannelConsts.INTRA_CHANNEL.equals(topupDto.getChannelCode())) {
+                Objects.requireNonNull(topupDto.getOriginatorKyc().getBankCode());
+                Objects.requireNonNull(topupDto.getOriginatorKyc().getPhoneNum());
+                Objects.requireNonNull(topupDto.getOriginatorKyc().getIban());
+                Objects.requireNonNull(topupDto.getOriginatorKyc().getName());
+            }
 
 
             log.info("::: Satisfied requestBody: [{}] :::", topupDto);

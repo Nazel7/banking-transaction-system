@@ -32,6 +32,7 @@ public class UserService {
     private final SecureUserRepo mSecureUserRepo;
 
     public User registerUser(final SignUpDto signUpDto) throws UserNotFoundException {
+        log.info("::: In registerUser.....");
 
         if (!BaseUtil.isRequestSatisfied(signUpDto)) {
 
@@ -62,6 +63,7 @@ public class UserService {
 
     public User upgradeUser(final Long useId, final UserInfoDto userInfoDto)
             throws UserNotFoundException {
+        log.info("::: In upgradeUser.....");
 
        UserModel model = findByUserId(useId);
 

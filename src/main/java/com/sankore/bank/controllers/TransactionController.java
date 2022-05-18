@@ -19,8 +19,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.NotActiveException;
-
 import javax.security.auth.login.AccountException;
 import javax.security.auth.login.AccountNotFoundException;
 import javax.servlet.http.HttpServletRequest;
@@ -42,7 +40,7 @@ public class TransactionController {
    public ResponseEntity<Transaction>  transferFund(@RequestBody TransferDto transferDto, HttpServletRequest request)
             throws AccountException, TransferNotValidException, UserNotFoundException {
 
-       final Transaction transaction= mTransactionService.tranferFund(transferDto, request);
+       final Transaction transaction= mTransactionService.doFundTransfer(transferDto, request);
 
        return new ResponseEntity<>(transaction, HttpStatus.OK);
    }
@@ -51,10 +49,10 @@ public class TransactionController {
    @PreAuthorize("hasRole('CUSTOMER')")
    @ApiOperation(value = "::: fundAccount :::", notes = "Api for quick account topUp")
    @PutMapping(" ")
-public ResponseEntity<Account>  fundAccount(@RequestBody TopupDto topupDto)
-           throws AccountNotFoundException {
+public ResponseEntity<Account>  fundAccount(@RequestBody TopupDto topupDto, HttpServletRequest request)
+           throws AccountNotFoundException, IllegalAccessException {
 
-        final Account account= mTransactionService.fundAccount(topupDto);
+        final Account account= mTransactionService.doFundAccount(topupDto, request);
 
        return new ResponseEntity<>(account, HttpStatus.OK);
 }

@@ -14,6 +14,7 @@ import com.sankore.bank.entities.models.AccountModel;
 import com.sankore.bank.entities.models.TransactionModel;
 import com.sankore.bank.entities.models.UserModel;
 import com.sankore.bank.enums.TransType;
+import com.sankore.bank.enums.TranxStatus;
 import com.sankore.bank.event.notifcation.DataInfo;
 import com.sankore.bank.event.notifcation.NotificationLog;
 import com.sankore.bank.event.notifcation.NotificationLogEvent;
@@ -49,7 +50,7 @@ public class TransactionService {
 
     private final TranxMessageConfig mMessageConfig;
 
-    public Transaction tranferFund(TransferDto transferDto, HttpServletRequest request)
+    public Transaction doFundTransfer(TransferDto transferDto, HttpServletRequest request)
             throws AccountException, TransferNotValidException, UserNotFoundException {
         log.info("::: In tranferFund.....");
 
@@ -167,8 +168,9 @@ public class TransactionService {
     }
 
 
-    public Account fundAccount(TopupDto topupDto, HttpServletRequest request) throws AccountNotFoundException, IllegalAccessException {
+    public Account doFundAccount(TopupDto topupDto, HttpServletRequest request) throws AccountNotFoundException, IllegalAccessException {
         log.info("::: In fundAccount.....");
+
         String token = request.getHeader("Authorization");
         if (token.contains("Bearer")) {
             token = token.split(" ")[1];
@@ -192,8 +194,11 @@ public class TransactionService {
         AccountModel topedAccount = creditAccount.deposit(topupDto.getAmount());
         log.info("Account with iban: [{}] topped up", topedAccount.getIban());
         mAccountRepo.save(creditAccount);
-        return AccountMapper.mapToDomain(topedAccount);
+        return AccountMapper.mapToDomain(topedAccount, TranxStatus.SUCCESSFUL.name());
     }
+
+
+    public Account doFundWithdrawal()
 
     // TODO: UPDATE FUND_ACCOUNT  AND TRANSFER_FUND SERVICE
     // TODO: DIRECT_DEBIT
