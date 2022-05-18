@@ -17,6 +17,7 @@ public class TransactionDto {
     private String tranCrncy;
     private String tranNarration;
     private String tranType;
+    private String tranxRef;
     private Long userId;
 
     @Tolerate

@@ -1,6 +1,6 @@
 package com.sankore.bank.utils;
 
-import com.sankore.bank.dtos.request.UserDto;
+import com.sankore.bank.dtos.request.SignUpDto;
 
 import java.util.Objects;
 
@@ -9,25 +9,26 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SignUpSpecUtil {
 
-    public static boolean isSatisfied(UserDto userDto) {
+    public static boolean isSatisfied(SignUpDto signUpDto) {
         try{
 
-            Objects.requireNonNull(userDto.getFirstName());
-            Objects.requireNonNull(userDto.getLastName());
-            Objects.requireNonNull(userDto.getAddress());
-            Objects.requireNonNull(userDto.getPassword());
-            Objects.requireNonNull(userDto.getVerificationCode());
-            Objects.requireNonNull(userDto.getPhone());
-            if (!userDto.getVerifiedPhone() || userDto.getPhone() == null) {
+            Objects.requireNonNull(signUpDto.getFirstName());
+            Objects.requireNonNull(signUpDto.getLastName());
+            Objects.requireNonNull(signUpDto.getAddress());
+            Objects.requireNonNull(signUpDto.getPassword());
+            Objects.requireNonNull(signUpDto.getVerificationCode());
+            Objects.requireNonNull(signUpDto.getPhone());
+            Objects.requireNonNull(signUpDto.getEmail());
+            if (!signUpDto.getVerifiedPhone()) {
                 return false;
             }
 
-            log.info("::: Satisfied requestBody: [{}] :::", userDto);
+            log.info("::: Satisfied requestBody: [{}] :::", signUpDto);
             return true;
 
         } catch (NullPointerException ex) {
             ex.printStackTrace();
-            log.debug("::: Unsatisfied requestBody [{}]:::", userDto);
+            log.debug("::: Unsatisfied requestBody [{}]:::", signUpDto);
             return false;
         }
 

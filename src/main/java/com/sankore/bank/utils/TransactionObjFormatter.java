@@ -17,6 +17,7 @@ public class TransactionObjFormatter {
     public static final String DATE_FORMAT = "yyyy-MM-dd:HH:mm:ss";
     public static final String YEAR_MONTH_FORMAT = "yyyy-MM";
     public static final String NGN_PHONE_NUM = "(?:(?:(?:\\+?234(?:\\h1)?|01)\\h*)?(?:\\(\\d{3}\\)|\\d{3})|\\d{4})(?:\\W*\\d{3})?\\W*\\d{4}(?!\\d)";
+    public static final String EMAIL_FORMAT = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
 
     public static Date getDate(String dateString) throws ParseException {
         return new SimpleDateFormat(DATE_FORMAT).parse(dateString);
@@ -48,6 +49,17 @@ public class TransactionObjFormatter {
         return dateMatcher.matches();
 
     }
+
+    public static boolean isEmailMatch(String yourEmail) {
+
+        Pattern pattern = Pattern.compile(EMAIL_FORMAT);
+        Matcher dateMatcher= pattern.matcher(yourEmail);
+
+        return dateMatcher.matches();
+
+    }
+
+
 
 
 }

@@ -2,7 +2,7 @@ package com.sankore.bank.controllers;
 
 import com.sankore.bank.services.UserService;
 import com.sankore.bank.dtos.response.User;
-import com.sankore.bank.dtos.request.UserDto;
+import com.sankore.bank.dtos.request.SignUpDto;
 import com.sankore.bank.dtos.request.UserInfoDto;
 import com.sankore.bank.dtos.response.UserNotFoundException;
 
@@ -31,10 +31,10 @@ public class UserController {
     @CrossOrigin
     @PostMapping(" ")
     @ApiOperation(value = "::: createUser :::", notes = "API for user creation with login credentials")
-    public ResponseEntity<User> createUser(@RequestBody UserDto userDto)
+    public ResponseEntity<User> createUser(@RequestBody SignUpDto signUpDto)
             throws UserNotFoundException {
 
-        final User user= mUserService.registerUser(userDto);
+        final User user= mUserService.registerUser(signUpDto);
 
         return new ResponseEntity<>(user, HttpStatus.CREATED);
     }

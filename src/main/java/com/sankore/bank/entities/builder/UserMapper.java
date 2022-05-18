@@ -5,28 +5,28 @@ import com.sankore.bank.entities.models.SecureUserModel;
 import com.sankore.bank.entities.models.UserModel;
 import com.sankore.bank.dtos.response.User;
 import com.sankore.bank.dtos.response.LogginResponse;
-import com.sankore.bank.dtos.request.UserDto;
+import com.sankore.bank.dtos.request.SignUpDto;
 import com.sankore.bank.dtos.request.UserInfoDto;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 public class UserMapper {
 
-    public static UserModel mapToModel(UserDto userDto){
+    public static UserModel mapToModel(SignUpDto signUpDto){
 
         return UserModel
                 .builder()
-                .address(userDto.getAddress())
-                .email(userDto.getEmail())
-                .firstName(userDto.getFirstName())
-                .lastName(userDto.getLastName())
+                .address(signUpDto.getAddress())
+                .email(signUpDto.getEmail())
+                .firstName(signUpDto.getFirstName())
+                .lastName(signUpDto.getLastName())
                 .tierLevel(TierLevel.LEVEL_ONE.name())
-                .verifiedHomeAddress(userDto.getVerifiedHomeAddress())
-                .verifiedBvn(userDto.getVerifiedBvn())
-                .verifiedEmail(userDto.getVerifiedEmail())
-                .verificationCode(userDto.getVerificationCode())
-                .bvn(userDto.getBvn())
-                .phone(userDto.getPhone())
+                .verifiedHomeAddress(signUpDto.getVerifiedHomeAddress())
+                .verifiedBvn(signUpDto.getVerifiedBvn())
+                .verifiedEmail(signUpDto.getVerifiedEmail())
+                .verificationCode(signUpDto.getVerificationCode())
+                .bvn(signUpDto.getBvn())
+                .phone(signUpDto.getPhone())
                 .build();
     }
 
@@ -80,9 +80,9 @@ public class UserMapper {
 
     }
 
-    public static SecureUserModel mapToAuth(UserModel userModel, UserDto userDto){
+    public static SecureUserModel mapToAuth(UserModel userModel, SignUpDto signUpDto){
         BCryptPasswordEncoder encoder= new BCryptPasswordEncoder();
-        String passcode= encoder.encode(userDto.getPassword());
+        String passcode= encoder.encode(signUpDto.getPassword());
 
         return SecureUserModel
                 .builder()

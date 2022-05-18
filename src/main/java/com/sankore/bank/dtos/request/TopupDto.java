@@ -9,4 +9,9 @@ public class TopupDto {
 
     private BigDecimal amount;
     private String iban;
+    private String tranxRef;
+    private String channelCode;
+    private String tranxType;
+    private OriginatorKyc originatorKyc;
+
 }

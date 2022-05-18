@@ -43,6 +43,8 @@ public class TransactionModel {
     private String channelCode;
     private String tranNarration;
     private String tranType;
+    private String tranxRef;
+    private String userToken;
     private Long userId;
 
     @CreationTimestamp
