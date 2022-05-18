@@ -11,11 +11,11 @@ import com.sankore.bank.dtos.response.UserNotFoundException;
 import com.sankore.bank.entities.builder.AccountMapper;
 import com.sankore.bank.entities.builder.TransactionMapper;
 import com.sankore.bank.entities.models.AccountModel;
-import com.sankore.bank.event.notifcation.NotificationLog;
 import com.sankore.bank.entities.models.TransactionModel;
 import com.sankore.bank.entities.models.UserModel;
 import com.sankore.bank.enums.TransType;
 import com.sankore.bank.event.notifcation.DataInfo;
+import com.sankore.bank.event.notifcation.NotificationLog;
 import com.sankore.bank.event.notifcation.NotificationLogEvent;
 import com.sankore.bank.event.notifcation.Receipient;
 import com.sankore.bank.repositories.AccountRepo;
@@ -28,7 +28,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 
 import javax.security.auth.login.AccountException;
 import javax.security.auth.login.AccountNotFoundException;
@@ -51,7 +50,12 @@ public class TransactionService {
     private final TranxMessageConfig mMessageConfig;
 
     public Transaction tranferFund(TransferDto transferDto, HttpServletRequest request)
-            throws AccountException, TransferNotValidException, UserNotFoundException{
+            throws AccountException, TransferNotValidException, UserNotFoundException {
+
+        String token = request.getHeader("Authorization");
+        if (token.contains("Bearer")) {
+            token = token.split(" ")[1];
+        }
 
         DataInfo data = new DataInfo();
         Receipient receipient = new Receipient();
@@ -69,11 +73,12 @@ public class TransactionService {
         final AccountModel debitAccount =
                 mAccountRepo.findAccountModelByIban(transferDto.getDebitAccountNo());
 
-        if (!userModel.isPresent()) {
+        if (userModel.isEmpty()) {
 
-            log.error("::: User not found with body: [{}]::: ", userModel.get());
+            log.error("::: User not found with body");
             throw new UserNotFoundException("User not found ");
         }
+
         if (!userModel.get().equals(debitAccount.getUserModel())) {
 
             log.error("::: user account not valid, Account: [{}] :::", debitAccount);
@@ -109,7 +114,8 @@ public class TransactionService {
             throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
         }
 
-        TransactionModel transactionModel = TransactionMapper.mapToModel(transferDto);
+
+        final TransactionModel transactionModel = TransactionMapper.mapToModel(transferDto, token);
 
         AccountModel debitedAccount =
                 debitAccount.withdraw(transferDto.getAmount());
@@ -145,7 +151,7 @@ public class TransactionService {
         notificationLog.setChannelCode(transferDto.getChannelCode());
 
         notificationLog.setEventType(TransType.TRANSFER.name());
-        String name= userModel.get().getFirstName().concat(" ").concat(userModel.get().getLastName());
+        String name = userModel.get().getFirstName().concat(" ").concat(userModel.get().getLastName());
         notificationLog.setInitiator(name);
 
         final NotificationLogEvent

@@ -5,7 +5,7 @@ import com.sankore.bank.dtos.request.TransferDto;
 
 public class TransactionMapper {
 
-    public static TransactionModel mapToModel(TransferDto transferDto){
+    public static TransactionModel mapToModel(TransferDto transferDto, String token){
 
         return TransactionModel
                 .builder()
@@ -16,6 +16,7 @@ public class TransactionMapper {
                 .debitAccountNo(transferDto.getDebitAccountNo())
                 .tranCrncy(transferDto.getTranCrncy())
                 .tranType(transferDto.getTranType())
+                .userToken(token)
                 .tranNarration(transferDto.getTranNarration())
                 .userId(transferDto.getUserId())
                 .build();
