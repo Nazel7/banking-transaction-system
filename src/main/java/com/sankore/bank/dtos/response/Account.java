@@ -1,5 +1,7 @@
 package com.sankore.bank.dtos.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.sankore.bank.entities.models.TransactionModel;
 import com.sankore.bank.entities.models.UserModel;
 
@@ -13,6 +15,8 @@ import lombok.Data;
 
 @Data
 @Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Account {
 
     private UUID id;

@@ -419,9 +419,9 @@ public class TransactionService {
             throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
         }
 
-
-
     }
+
+    public Account doInvestment()
 
     // TODO: UPDATE FUND_ACCOUNT  AND TRANSFER_FUND SERVICE
     // TODO: DIRECT_DEBIT
