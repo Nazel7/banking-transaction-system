@@ -11,6 +11,7 @@ import com.sankore.bank.dtos.response.UserNotFoundException;
 import com.sankore.bank.entities.builder.AccountMapper;
 import com.sankore.bank.entities.builder.TransactionMapper;
 import com.sankore.bank.entities.models.AccountModel;
+import com.sankore.bank.entities.models.InvestmentModel;
 import com.sankore.bank.entities.models.TransactionModel;
 import com.sankore.bank.entities.models.UserModel;
 import com.sankore.bank.enums.TransType;
@@ -20,6 +21,7 @@ import com.sankore.bank.event.notifcation.NotificationLog;
 import com.sankore.bank.event.notifcation.NotificationLogEvent;
 import com.sankore.bank.event.notifcation.Receipient;
 import com.sankore.bank.repositories.AccountRepo;
+import com.sankore.bank.repositories.InvestmentRepo;
 import com.sankore.bank.repositories.TransactionRepo;
 import com.sankore.bank.repositories.UserRepo;
 import com.sankore.bank.utils.BaseUtil;
@@ -45,6 +47,7 @@ public class TransactionService {
     private final TransactionRepo mTransactionRepo;
     private final AccountRepo mAccountRepo;
     private final UserRepo mUserRepo;
+    private final InvestmentRepo mInvestmentRepo;
     private final ApplicationEventPublisher mEventPublisher;
     private final JwtUtil jwtUtil;
 
@@ -419,11 +422,38 @@ public class TransactionService {
 
     }
 
-    public Account doInvestment(InvestmentmentDto dto, HttpServletRequest request) {
+    public Account doInvestment(InvestmentmentDto dto, HttpServletRequest request) throws TransferNotValidException {
         log.info("::: In doInvestment.....");
-        String token = request.getHeader("Authorization");
 
+        try {
+            String token = request.getHeader("Authorization");
+            if (token.contains("Bearer")) {
+                token = token.split(" ")[1];
+            }
 
+            boolean isInvementPayloadValid = BaseUtil.isRequestSatisfied(dto);
+            if (!isInvementPayloadValid) {
+                log.error("::: RequestPayload error with data: [{}]", dto);
+                throw new IllegalArgumentException("RequestPayload error");
+            }
+            String userName = jwtUtil.extractUsername(token);
+            AccountModel accountModel = mAccountRepo.findAccountModelByIban(dto.getIban());
+            if (!userName.equals(accountModel.getUserModel().getEmail())) {
+                log.info("::: Account broken, UnAuthorized account access");
+                throw new IllegalAccessException("Account broken, UnAuthorized account access");
+            }
+            accountModel = accountModel.withdraw(dto.getAmount());
+            if (accountModel ==  null) {
+                log.error("::: Insufficient Balance for Investment");
+                throw new IllegalArgumentException("Insufficient Balance for Investment");
+            }
+
+            InvestmentModel investmentModel =
+
+        }catch (Exception ex) {
+            ex.printStackTrace();
+            throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
+        }
 
 
 

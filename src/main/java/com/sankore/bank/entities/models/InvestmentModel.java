@@ -1,10 +1,7 @@
 package com.sankore.bank.entities.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import lombok.experimental.Tolerate;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -19,6 +16,7 @@ import java.util.Date;
         @Index(name = "plan_index", columnList = "plan"),
         @Index(name = "ref_index", columnList = "tranxRef"),
 })
+@Builder
 @Getter
 @Setter
 @Access(AccessType.FIELD)
