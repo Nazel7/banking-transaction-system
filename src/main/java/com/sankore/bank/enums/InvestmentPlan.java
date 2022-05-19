@@ -11,6 +11,16 @@ public enum InvestmentPlan {
         this.minAmount = minAmount;
     }
 
+    public static InvestmentPlan getInvestmentPlan(String investmentPlan) {
+        for (InvestmentPlan type: InvestmentPlan.values()) {
+            if (type.name().equalsIgnoreCase(investmentPlan)) {
+                return type;
+            }
+        }
+
+        throw new IllegalArgumentException("Invalid InvestmentPlan");
+    }
+
     public double getMinAmount() {
         return minAmount;
     }

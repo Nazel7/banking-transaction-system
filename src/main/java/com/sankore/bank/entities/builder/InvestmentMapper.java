@@ -16,7 +16,8 @@ import java.util.Date;
 
 public class InvestmentMapper {
 
-    public static InvestmentModel mapDtoToModel(AccountModel accountModel, InvestmentmentDto investmentmentDto) {
+    public static InvestmentModel mapDtoToModel(AccountModel accountModel,
+                                                InvestmentmentDto investmentmentDto) {
 
 
 
