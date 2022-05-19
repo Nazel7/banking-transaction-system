@@ -3,7 +3,7 @@ package com.sankore.bank.dtos.request;
 import java.math.BigDecimal;
 import java.util.Date;
 
-public class InvetstmentDto {
+public class InvestmentmentDto {
 
     private String status;
     private BigDecimal amount;
