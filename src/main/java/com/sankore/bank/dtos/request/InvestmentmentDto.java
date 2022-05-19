@@ -1,18 +1,20 @@
 package com.sankore.bank.dtos.request;
 
-import java.math.BigDecimal;
-import java.util.Date;
+import lombok.Data;
 
+import java.math.BigDecimal;
+
+@Data
 public class InvestmentmentDto {
 
-    private String status;
     private BigDecimal amount;
     private String iban;
-    private String bvn;
     private String firName;
     private String lastName;
     private String middleName;
-    private String category;
+    private String bankCode;
+    private String currency;
+    private String plan;
     private String tranxRef;
     private String startDate;
     private String endDate;

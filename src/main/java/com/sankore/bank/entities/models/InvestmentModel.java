@@ -37,6 +37,7 @@ public class InvestmentModel {
     private String firName;
     private String lastName;
     private String middleName;
+    private String bankCode;
     private String plan;
     private String tranxRef;
     private Date startDate;

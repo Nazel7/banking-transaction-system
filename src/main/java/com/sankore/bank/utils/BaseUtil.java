@@ -9,6 +9,7 @@ import com.sankore.bank.enums.AccountType;
 import com.sankore.bank.enums.Currency;
 import lombok.extern.slf4j.Slf4j;
 
+import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.util.Objects;
 
@@ -41,7 +42,8 @@ public class BaseUtil {
     }
 
     public static boolean isRequestSatisfied(SignUpDto signUpDto) {
-        try{
+        log.info("::: In SignUp payload validation.....");
+        try {
 
             Objects.requireNonNull(signUpDto.getFirstName());
             Objects.requireNonNull(signUpDto.getLastName());
@@ -74,7 +76,8 @@ public class BaseUtil {
     }
 
     public static boolean isRequestSatisfied(TransferDto transferDto) {
-        try{
+        log.info("::: In Transfer payload validation.....");
+        try {
 
             Objects.requireNonNull(transferDto.getAmount());
             Objects.requireNonNull(transferDto.getBenefAccountNo());
@@ -98,7 +101,8 @@ public class BaseUtil {
     }
 
     public static boolean isRequestSatisfied(TopupDto topupDto) {
-        try{
+        log.info("::: In TopUp payload validation.....");
+        try {
 
             Objects.requireNonNull(topupDto.getAmount());
             Objects.requireNonNull(topupDto.getIban());
@@ -128,7 +132,8 @@ public class BaseUtil {
     }
 
     public static boolean isRequestSatisfied(WithrawalDto withrawalDto) {
-        try{
+        log.info("::: In Withdrawal payload validation.....");
+        try {
 
             Objects.requireNonNull(withrawalDto.getAmount());
             Objects.requireNonNull(withrawalDto.getIban());
@@ -151,7 +156,8 @@ public class BaseUtil {
     }
 
     public static boolean isRequestSatisfied(LiquidateDto liquidateDto) {
-        try{
+        log.info("::: In Liquidity payload validation.....");
+        try {
 
             Objects.requireNonNull(liquidateDto.getIban());
             Objects.requireNonNull(liquidateDto.getChannelCode());
@@ -176,7 +182,45 @@ public class BaseUtil {
 
     }
 
+    private BigDecimal amount;
+    private String iban;
+    private String firName;
+    private String lastName;
+    private String middleName;
+    private String category;
+    private String tranxRef;
+    private String startDate;
+    private String endDate;
+
+    public static boolean isRequestSatisfied(InvestmentmentDto investmentmentDto) {
+        log.info("::: In Investment payload validation.....");
+        try {
+
+            Objects.requireNonNull(investmentmentDto.getIban());
+            Objects.requireNonNull(investmentmentDto.getAmount());
+            Objects.requireNonNull(investmentmentDto.getTranxRef());
+            Objects.requireNonNull(investmentmentDto.getPlan());
+            Objects.requireNonNull(investmentmentDto.getBankCode());
+            Objects.requireNonNull(investmentmentDto.getCurrency());
+            Objects.requireNonNull(investmentmentDto.getStartDate());
+            Objects.requireNonNull(investmentmentDto.getEndDate());
+            Objects.requireNonNull(investmentmentDto.getFirName());
+            Objects.requireNonNull(investmentmentDto.getLastName());
+
+            log.info("::: Satisfied requestBody: [{}] :::", investmentmentDto);
+            return true;
+
+        } catch (NullPointerException ex) {
+            ex.printStackTrace();
+            log.debug("::: Unsatisfied requestBody [{}]:::", investmentmentDto);
+            return false;
+        }
+
+    }
+
+
     public static boolean isTransferSatisfied(TransferDto transaction) {
+        log.info("::: In Transfer payload validation.....");
         try {
 
             Objects.requireNonNull(transaction.getAmount());
