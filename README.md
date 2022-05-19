@@ -1,17 +1,17 @@
 
 ## How To Run
 
-Clone Project from Github
+1. Clone Project from Github
 ```
  git clone https://github.com/Nazel7/banking-transaction-system.git
 
 ```
 
-Setup Postgresql Database 
+2. Setup Postgresql Database 
 
-SetUp JWT secret 
+3. SetUp JWT secret 
 
-All in the Environment variable.
+4. All properties in the Environment variable below
 
 ## Run as Docker image
 
@@ -40,7 +40,6 @@ JWT_SECRET=$2a$10$poqgI6yBmhiTAnacv/.tv.DzczAg.efmg.zlXIagMPhZ3M.OVDip2
 FAIL_TRANSACTION_MESSAGE=Transaction fail, please try again. Thank you for banking with us
 SUCCESS_TRANSACTION_MESSAGE=Transaction is successful
 ```
-
 
 
 Thank you.
