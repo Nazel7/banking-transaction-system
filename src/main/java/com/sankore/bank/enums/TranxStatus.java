@@ -4,5 +4,7 @@ public enum TranxStatus {
 
     SUCCESSFUL,
     FAILED,
-    PENDING
+    PENDING,
+    OPEN,
+    CLOSE;
 }

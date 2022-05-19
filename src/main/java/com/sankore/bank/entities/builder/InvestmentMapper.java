@@ -4,6 +4,7 @@ import com.sankore.bank.dtos.request.InvestmentmentDto;
 import com.sankore.bank.dtos.response.Account;
 import com.sankore.bank.entities.models.AccountModel;
 import com.sankore.bank.entities.models.InvestmentModel;
+import com.sankore.bank.enums.TranxStatus;
 import lombok.AccessLevel;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
@@ -17,12 +18,10 @@ public class InvestmentMapper {
 
     public static InvestmentModel mapDtoToModel(AccountModel accountModel, InvestmentmentDto investmentmentDto) {
 
-        private Long id;
-        private String status;
+
 
         @Setter(AccessLevel.NONE)
         private BigDecimal investedAmount;
-
         private BigDecimal accruedBalance;
 
         @Setter(AccessLevel.NONE)
@@ -46,7 +45,13 @@ public class InvestmentMapper {
         @UpdateTimestamp
         private String updatedAt;
 
-        return InvestmentModel.builder().build();
+        return InvestmentModel
+                .builder()
+                .status(TranxStatus.OPEN.name())
+                .investedAmount(investmentmentDto.getAmount())
+                .iban(investmentmentDto.getIban())
+
+                .build();
 
     }
 }
