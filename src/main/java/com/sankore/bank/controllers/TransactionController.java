@@ -1,5 +1,6 @@
 package com.sankore.bank.controllers;
 
+import com.sankore.bank.dtos.request.LiquidateDto;
 import com.sankore.bank.dtos.request.WithrawalDto;
 import com.sankore.bank.services.TransactionService;
 import com.sankore.bank.dtos.response.Account;
@@ -39,7 +40,7 @@ public class TransactionController {
     @ApiOperation(value = "::: transferFund :::", notes = "APi for fund transfer")
     @PreAuthorize("hasRole('CUSTOMER')")
    public ResponseEntity<Transaction>  transferFund(@RequestBody TransferDto transferDto, HttpServletRequest request)
-            throws AccountException, TransferNotValidException, UserNotFoundException {
+            throws TransferNotValidException {
 
        final Transaction transaction= mTransactionService.doFundTransfer(transferDto, request);
 
@@ -64,9 +65,21 @@ public ResponseEntity<Account>  fundAccount(@RequestBody TopupDto topupDto, Http
     @ApiOperation(value = "::: fundAccount :::", notes = "Api for quick account topUp")
     @PutMapping("/withdraw")
     public ResponseEntity<Account>  withdrawAmount(@RequestBody WithrawalDto withrawalDto, HttpServletRequest request)
-            throws TransferNotValidException, AccountException, IllegalAccessException {
+            throws TransferNotValidException {
 
         final Account account= mTransactionService.doFundWithdrawal(withrawalDto, request);
+
+        return new ResponseEntity<>(account, HttpStatus.OK);
+    }
+
+    @CrossOrigin
+    @PreAuthorize("hasRole('CUSTOMER')")
+    @ApiOperation(value = "::: fundAccount :::", notes = "Api for quick account topUp")
+    @PutMapping("/liquidate")
+    public ResponseEntity<Account>  liquidateAccount(@RequestBody LiquidateDto liquidateDto, HttpServletRequest request)
+            throws TransferNotValidException {
+
+        final Account account= mTransactionService.doLiquidateAccount(liquidateDto, request);
 
         return new ResponseEntity<>(account, HttpStatus.OK);
     }
