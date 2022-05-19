@@ -459,7 +459,13 @@ public class TransactionService {
             }
 
             final InvestmentModel investmentModel = InvestmentMapper.mapDtoToModel(dto);
-            InvestmentModel investedModel = mInvestmentRepo.save(investmentModel);
+            final InvestmentModel investedAmountModel = investmentModel.invest(dto.getAmount(), dto.getPlan(), dto.getTranxRef());
+
+            if (investedAmountModel == null) {
+                log.error("::: Unable to process Investment. Please try again later");
+            }
+            assert investedAmountModel != null;
+            InvestmentModel investedModel = mInvestmentRepo.save(investedAmountModel);
             log.info("::: Investemnt is successful with payload: [{}]", investedModel);
 
             String notificationMessage =

@@ -23,7 +23,6 @@ public class InvestmentMapper {
         return InvestmentModel
                 .builder()
                 .status(TranxStatus.OPEN.name())
-                .investedAmount(investmentmentDto.getAmount())
                 .iban(investmentmentDto.getIban())
                 .plan(investmentmentDto.getPlan())
                 .intRateMonth(investmentPlan.getIntRateMonth())
@@ -37,4 +36,8 @@ public class InvestmentMapper {
                 .build();
 
     }
+
+
+
+
 }
