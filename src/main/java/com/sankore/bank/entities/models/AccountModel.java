@@ -100,7 +100,7 @@ public class AccountModel {
     public AccountModel withdraw(BigDecimal amount)
             throws AccountException {
 
-        if (balance.compareTo(amount) > 0) {
+        if (balance.compareTo(amount) >= 0) {
             this.balance = this.balance.subtract(amount);
         } else {
             throw new AccountException("insufficient account balance!");

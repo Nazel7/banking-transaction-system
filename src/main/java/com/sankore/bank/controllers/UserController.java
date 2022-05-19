@@ -29,7 +29,7 @@ public class UserController {
     private final UserService mUserService;
 
     @CrossOrigin
-    @PostMapping(" ")
+    @PostMapping("/signup")
     @ApiOperation(value = "::: createUser :::", notes = "API for user creation with login credentials")
     public ResponseEntity<User> createUser(@RequestBody SignUpDto signUpDto)
             throws UserNotFoundException {

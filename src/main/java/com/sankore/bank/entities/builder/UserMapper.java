@@ -25,8 +25,13 @@ public class UserMapper {
                 .verifiedBvn(signUpDto.getVerifiedBvn())
                 .verifiedEmail(signUpDto.getVerifiedEmail())
                 .verificationCode(signUpDto.getVerificationCode())
+                .verifiedPhone(signUpDto.getVerifiedPhone())
                 .bvn(signUpDto.getBvn())
                 .phone(signUpDto.getPhone())
+                .address(signUpDto.getAddress())
+                .phone(signUpDto.getPhone())
+                .homeAddress(signUpDto.getHomeAddress())
+                .pin(signUpDto.getPin())
                 .build();
     }
 

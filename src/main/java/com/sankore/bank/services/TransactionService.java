@@ -4,10 +4,7 @@ import com.sankore.bank.auth.util.JwtUtil;
 import com.sankore.bank.configs.TranxMessageConfig;
 import com.sankore.bank.contants.ChannelConsts;
 import com.sankore.bank.dtos.request.*;
-import com.sankore.bank.dtos.response.Account;
-import com.sankore.bank.dtos.response.Transaction;
-import com.sankore.bank.dtos.response.TransferNotValidException;
-import com.sankore.bank.dtos.response.UserNotFoundException;
+import com.sankore.bank.dtos.response.*;
 import com.sankore.bank.entities.builder.AccountMapper;
 import com.sankore.bank.entities.builder.InvestmentMapper;
 import com.sankore.bank.entities.builder.TransactionMapper;
@@ -421,7 +418,7 @@ public class TransactionService {
 
     }
 
-    public Account doInvestment(InvestmentmentDto dto, HttpServletRequest request) throws TransferNotValidException {
+    public Investment doInvestment(InvestmentmentDto dto, HttpServletRequest request) throws TransferNotValidException {
         log.info("::: In doInvestment.....");
 
         try {
@@ -489,13 +486,13 @@ public class TransactionService {
             log.info("::: notification sent successfully, data: [{}]",
                     notificationLogEvent.getNotificationLog());
 
-
+            log.info("::: Investment is successful....");
+            return InvestmentMapper.mapModelToDto(investedModel);
 
         }catch (Exception ex) {
             ex.printStackTrace();
             throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
         }
-
 
 
     }

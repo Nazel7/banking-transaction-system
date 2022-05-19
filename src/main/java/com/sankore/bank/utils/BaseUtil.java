@@ -18,7 +18,7 @@ import java.util.Objects;
 public class BaseUtil {
 
     public static AccountModel generateAccountNumber(UserModel userModel, String accounType) {
-
+        log.info("::: In generateAccountNumber.....");
         String[] num = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
 
         SecureRandom random = new SecureRandom();
@@ -29,10 +29,13 @@ public class BaseUtil {
         }
 
         String iban = sb.toString();
+        log.info("::: Iban: [{}]", iban);
         AccountType accountType = AccountType.getAccountType(accounType);
+        log.info("::: AccountType: [{}]", accountType);
 
         AccountModel accountModel = new AccountModel(iban, Currency.NGN.name(),
                 AccountStatus.ACTIVE.name(), accounType);
+        accountModel.setAccountType(accountType.name());
 
         log.info("::: Account with Iban: [{}] created for user with email: [{}]",
                 accountModel.getIban(),
@@ -56,7 +59,7 @@ public class BaseUtil {
             Objects.requireNonNull(signUpDto.getAccountType());
             boolean isEmailValid = TransactionObjFormatter.isEmailMatch(signUpDto.getEmail());
             boolean isPhoneNumValid = TransactionObjFormatter.isMatchNigerianPhoneNum(signUpDto.getPhone());
-            if (!isEmailValid || isPhoneNumValid) {
+            if (!isEmailValid || !isPhoneNumValid) {
                 log.error("::: Email| PhoneNum not valid");
                 return false;
             }

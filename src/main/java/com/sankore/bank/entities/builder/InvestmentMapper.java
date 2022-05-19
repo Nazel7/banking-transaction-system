@@ -1,6 +1,7 @@
 package com.sankore.bank.entities.builder;
 
 import com.sankore.bank.dtos.request.InvestmentmentDto;
+import com.sankore.bank.dtos.response.Investment;
 import com.sankore.bank.entities.models.AccountModel;
 import com.sankore.bank.entities.models.InvestmentModel;
 import com.sankore.bank.enums.InvestmentPlan;
@@ -8,6 +9,7 @@ import com.sankore.bank.enums.TranxStatus;
 import com.sankore.bank.utils.TransactionObjFormatter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.Date;
 
@@ -35,6 +37,29 @@ public class InvestmentMapper {
                 .endDate(endDateInv)
                 .build();
 
+    }
+
+
+    public static Investment mapModelToDto(InvestmentModel model) {
+
+        return Investment
+                .builder()
+                .id(model.getId())
+                .status(model.getStatus())
+                .investedAmount(model.getInvestedAmount())
+                .accruedBalance(model.getAccruedBalance())
+                .iban(model.getIban())
+                .intRateMonth(model.getIntRateMonth())
+                .intRateYear(model.getIntRateYear())
+                .firName(model.getFirName())
+                .lastName(model.getLastName())
+                .middleName(model.getMiddleName())
+                .bankCode(model.getBankCode())
+                .plan(model.getPlan())
+                .investmentRefNo(model.getInvestmentRefNo())
+                .startDate(model.getStartDate())
+                .endDate(model.getEndDate())
+                .build();
     }
 
 

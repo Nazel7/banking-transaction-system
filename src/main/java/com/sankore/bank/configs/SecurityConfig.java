@@ -47,12 +47,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable().authorizeRequests()
-            .antMatchers("/api/auth").permitAll()
-            .antMatchers("/api/users").permitAll()
-            .antMatchers("/api/swagger-ui.html", "/api/swagger-ui.html**", "/api/swagger-ui.html/**",
-                         "/api/webjars**", "/api/webjars/**", "/api/swagger-resources",
-                         "/api/swagger-resources/**", "/api/swagger-resources**" ).permitAll()
-            .antMatchers("/api/v2/api-docs**", "/api/v2/api-docs").permitAll()
+            .antMatchers("/apis/sankore-bank/auth").permitAll()
+            .antMatchers("/apis/sankore-bank/users/signup").permitAll()
+            .antMatchers("/apis/sankore-bank/swagger-ui.html", "/apis/sankore-bank/swagger-ui.html**", "/apis/sankore-bank/swagger-ui.html/**",
+                         "/apis/sankore-bank/webjars**", "/apis/sankore-bank/webjars/**", "/apis/sankore-bank/swagger-resources",
+                         "/apis/sankore-bank/swagger-resources/**", "/apis/sankore-bank/swagger-resources**" ).permitAll()
+            .antMatchers("/apis/sankore-bank/v2/api-docs**", "/apis/sankore-bank/v2/api-docs").permitAll()
             .anyRequest()
             .authenticated()
             .and()

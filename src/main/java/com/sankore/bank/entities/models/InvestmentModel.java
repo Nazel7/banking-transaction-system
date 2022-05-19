@@ -13,13 +13,14 @@ import java.util.Objects;
 
 @Entity
 @Table(indexes = {
-        @Index(name = "acct_iban_index", columnList = "iban"),
+        @Index(name = "acct_iban_index", columnList = "account_iban"),
         @Index(name = "plan_index", columnList = "plan"),
-        @Index(name = "ref_index", columnList = "tranxRef"),
+        @Index(name = "ref_index", columnList = "investmentRefNo"),
 })
 @Builder
 @Getter
 @Setter
+@AllArgsConstructor
 @Access(AccessType.FIELD)
 @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -58,7 +59,7 @@ public class InvestmentModel {
     @CreationTimestamp
     private Date createdAt;
     @UpdateTimestamp
-    private String updatedAt;
+    private Date updatedAt;
 
     @Tolerate
     public InvestmentModel() {

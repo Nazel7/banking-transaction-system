@@ -1,14 +1,8 @@
 package com.sankore.bank.controllers;
 
-import com.sankore.bank.dtos.request.LiquidateDto;
-import com.sankore.bank.dtos.request.WithrawalDto;
+import com.sankore.bank.dtos.request.*;
+import com.sankore.bank.dtos.response.*;
 import com.sankore.bank.services.TransactionService;
-import com.sankore.bank.dtos.response.Account;
-import com.sankore.bank.dtos.response.Transaction;
-import com.sankore.bank.dtos.request.TopupDto;
-import com.sankore.bank.dtos.request.TransferDto;
-import com.sankore.bank.dtos.response.TransferNotValidException;
-import com.sankore.bank.dtos.response.UserNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -82,6 +76,18 @@ public ResponseEntity<Account>  fundAccount(@RequestBody TopupDto topupDto, Http
         final Account account= mTransactionService.doLiquidateAccount(liquidateDto, request);
 
         return new ResponseEntity<>(account, HttpStatus.OK);
+    }
+
+    @CrossOrigin
+    @PreAuthorize("hasRole('CUSTOMER')")
+    @ApiOperation(value = "::: fundAccount :::", notes = "Api for quick account topUp")
+    @PostMapping("/invest")
+    public ResponseEntity<Investment>  InvestAmount(@RequestBody InvestmentmentDto investmentmentDto, HttpServletRequest request)
+            throws TransferNotValidException {
+
+        final Investment investment= mTransactionService.doInvestment(investmentmentDto, request);
+
+        return new ResponseEntity<>(investment, HttpStatus.CREATED);
     }
 
 
