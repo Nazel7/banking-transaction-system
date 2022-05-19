@@ -9,6 +9,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
@@ -88,11 +89,13 @@ public class AccountModel {
         this.currency = currency;
         this.status = status;
         this.accountType = accountType;
+        this.balance = new BigDecimal(0.00);
     }
 
     public AccountModel deposit(BigDecimal amount) {
 
-        this.balance = balance.add(amount);
+        System.out.println("BBB " + this.balance);
+       this.balance = this.balance.add(amount, new MathContext(4));
 
         return this;
     }

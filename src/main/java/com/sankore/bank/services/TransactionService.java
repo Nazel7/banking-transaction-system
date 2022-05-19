@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 
 import javax.security.auth.login.AccountNotFoundException;
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -182,6 +183,7 @@ public class TransactionService {
         try {
 
             String token = request.getHeader("Authorization");
+            System.out.println(token);
             if (token.contains("Bearer")) {
                 token = token.split(" ")[1];
             }
@@ -200,12 +202,14 @@ public class TransactionService {
 
             log.info("::: About to validate Account owner.....");
             String userName = jwtUtil.extractUsername(token);
-            if (!userName.equals(creditAccount.getUserModel().getEmail())) {
+            System.out.println("JwtUser: " + userName);
+            UserModel userModel = mUserRepo.findUserModelByEmail(userName);
+            if (userModel == null) {
                 log.error("::: Account broken, Invalid Account access");
                 throw new IllegalAccessException("Account broken, Invalid Account access");
             }
+
             AccountModel topedAccount = creditAccount.deposit(topupDto.getAmount());
-            log.info("Account with iban: [{}] topped up", topedAccount.getIban());
             mAccountRepo.save(topedAccount);
 
             transactionModel.setStatus(TranxStatus.SUCCESSFUL.name());
@@ -264,7 +268,8 @@ public class TransactionService {
 
             log.info("::: About to validate Account owner.....");
             String userName = jwtUtil.extractUsername(token);
-            if (!userName.equals(accountModel.getUserModel().getEmail())) {
+            UserModel userModel = mUserRepo.findUserModelByEmail(userName);
+            if (userModel == null) {
                 log.error("::: Account broken, Invalid Account access");
                 throw new IllegalAccessException("Account broken, Invalid Account access");
             }
@@ -358,7 +363,8 @@ public class TransactionService {
             log.info("::: About to validate Account owner.....");
             String userName = jwtUtil.extractUsername(token);
             System.out.println("UserName: " + userName);
-            if (!userName.equals(accountModel.getUserModel().getEmail())) {
+            UserModel userModel = mUserRepo.findUserModelByEmail(userName);
+            if (userModel == null) {
                 log.error("::: Account broken, Invalid Account access");
                 throw new IllegalAccessException("Account broken, Invalid Account access");
             }

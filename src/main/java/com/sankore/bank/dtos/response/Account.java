@@ -20,7 +20,7 @@ import lombok.Data;
 public class Account {
 
     private UUID id;
-    private BigDecimal balance;
+    private Double balance;
     private String iban;
     private Date createdAt;
     private Date updatedAt;

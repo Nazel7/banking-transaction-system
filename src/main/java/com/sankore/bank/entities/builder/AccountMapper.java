@@ -14,7 +14,7 @@ public class AccountMapper {
                 .currency(model.getCurrency())
                 .createdAt(model.getCreatedAt())
                 .iban(model.getIban())
-                .balance(model.getBalance())
+                .balance(model.getBalance().doubleValue())
                 .status(tranxStatus ==  null ? TranxStatus.PENDING.name(): tranxStatus)
                 .updatedAt(model.getUpdatedAt())
                 .build();

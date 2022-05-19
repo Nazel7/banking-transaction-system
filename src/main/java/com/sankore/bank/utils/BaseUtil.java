@@ -36,6 +36,7 @@ public class BaseUtil {
         AccountModel accountModel = new AccountModel(iban, Currency.NGN.name(),
                 AccountStatus.ACTIVE.name(), accounType);
         accountModel.setAccountType(accountType.name());
+        accountModel.setBvn(userModel.getBvn());
 
         log.info("::: Account with Iban: [{}] created for user with email: [{}]",
                 accountModel.getIban(),
@@ -117,7 +118,6 @@ public class BaseUtil {
             Objects.requireNonNull(topupDto.getChannelCode());
             Objects.requireNonNull(topupDto.getTranxRef());
             Objects.requireNonNull(topupDto.getTranxType());
-            Objects.requireNonNull(topupDto.getChannelCode());
             if (ChannelConsts.ATM_CHANNEL.equals(topupDto.getChannelCode()) ||
                     ChannelConsts.NIBSS_CHANNEL.equals(topupDto.getChannelCode()) ||
                     ChannelConsts.INTRA_CHANNEL.equals(topupDto.getChannelCode())) {
