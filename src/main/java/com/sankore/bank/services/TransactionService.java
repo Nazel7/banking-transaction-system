@@ -124,7 +124,7 @@ public class TransactionService {
             final TransactionModel transactionModel = TransactionMapper.mapToModel(transferDto, token);
             if (!sender.getVerificationCode().equals(transferDto.getVerificationCode())) {
                 log.error("Transfer verificationCode failed.....");
-                throw new IllegalAccessException("Access denied for Invalid verificationCode")
+                throw new IllegalAccessException("Access denied for Invalid verificationCode");
             }
 
             AccountModel debitedAccount =
