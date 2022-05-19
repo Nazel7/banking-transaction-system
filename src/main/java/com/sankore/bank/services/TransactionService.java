@@ -356,6 +356,7 @@ public class TransactionService {
 
             log.info("::: About to validate Account owner.....");
             String userName = jwtUtil.extractUsername(token);
+            System.out.println("UserName: " + userName);
             if (!userName.equals(accountModel.getUserModel().getEmail())) {
                 log.error("::: Account broken, Invalid Account access");
                 throw new IllegalAccessException("Account broken, Invalid Account access");
@@ -421,6 +422,8 @@ public class TransactionService {
     public Account doInvestment(InvestmentmentDto dto, HttpServletRequest request) {
         log.info("::: In doInvestment.....");
         String token = request.getHeader("Authorization");
+
+
 
 
 
