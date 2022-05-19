@@ -95,6 +95,7 @@ public class TransactionService {
                     mAccountRepo.findAccountModelByIban(transferDto.getBenefAccountNo());
 
             final UserModel sender = debitAccount.getUserModel();
+            System.out.println("Sender " + sender);
             final UserModel receiver = creditAccount.getUserModel();
 
             // Very if account is active not close or debit freeze
