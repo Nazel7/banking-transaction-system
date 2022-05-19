@@ -50,6 +50,10 @@ public class InvestmentModel {
     private Date startDate;
     private Date endDate;
 
+    @ManyToOne
+    @JoinColumn
+    private UserModel userModelInv;
+
     @CreationTimestamp
     private Date createdAt;
     @UpdateTimestamp

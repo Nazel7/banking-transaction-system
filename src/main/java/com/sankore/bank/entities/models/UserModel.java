@@ -2,15 +2,7 @@ package com.sankore.bank.entities.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.Email;
 
 import lombok.Builder;
@@ -20,6 +12,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.Date;
+import java.util.List;
 
 @Builder
 @Data
@@ -55,6 +48,9 @@ public class UserModel {
 
     @OneToOne(mappedBy = "userModel")
     private AccountModel account;
+
+    @OneToMany(mappedBy = "userModelInv")
+    private List<InvestmentModel> investment;
 
     private Boolean verifiedEmail;
     private Boolean verifiedPhone;
