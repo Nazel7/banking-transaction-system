@@ -189,6 +189,8 @@ public class BaseUtil {
             Objects.requireNonNull(transaction.getUserId());
             Objects.requireNonNull(transaction.getTranxRef());
             Objects.requireNonNull(transaction.getChannelCode());
+            Objects.requireNonNull(transaction.getVerificationCode());
+
 
             log.info("::: Transaction requestBody is satisfied with payload: [{}]", transaction);
             return true;

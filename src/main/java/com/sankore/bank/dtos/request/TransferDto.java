@@ -20,6 +20,7 @@ public class TransferDto {
     private String tranxRef;
     private String channelCode;
     private Long userId;
+    private String verificationCode;
 
     @Tolerate
     public TransferDto(){

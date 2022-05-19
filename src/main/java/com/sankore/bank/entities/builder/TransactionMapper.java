@@ -1,8 +1,11 @@
 package com.sankore.bank.entities.builder;
+import com.sankore.bank.dtos.request.LiquidateDto;
+import com.sankore.bank.dtos.request.TopupDto;
 import com.sankore.bank.dtos.request.WithrawalDto;
 import com.sankore.bank.entities.models.TransactionModel;
 import com.sankore.bank.dtos.response.Transaction;
 import com.sankore.bank.dtos.request.TransferDto;
+import com.sankore.bank.enums.TranxStatus;
 
 public class TransactionMapper {
 
@@ -20,6 +23,7 @@ public class TransactionMapper {
                 .userToken(token)
                 .tranNarration(transferDto.getTranNarration())
                 .userId(transferDto.getUserId())
+                .channelCode(transferDto.getChannelCode())
                 .build();
     }
 
@@ -35,6 +39,38 @@ public class TransactionMapper {
                 .tranType(withrawalDto.getTranxType())
                 .userToken(token)
                 .tranNarration(withrawalDto.getTranxNaration())
+                .channelCode(withrawalDto.getChannelCode())
+                .build();
+    }
+    public static TransactionModel mapToModel(LiquidateDto liquidateDto, String token){
+
+        return TransactionModel
+                .builder()
+                .tranxRef(liquidateDto.getTranxRef())
+                .benefAccountNo(liquidateDto.getIban())
+                .debitAccountNo(liquidateDto.getIban())
+                .tranCrncy(liquidateDto.getTranxCrncy())
+                .tranType(liquidateDto.getTranxType())
+                .userToken(token)
+                .tranNarration(liquidateDto.getTranxNaration())
+                .liquidityApproval(liquidateDto.getLiquidityApproval())
+                .isLiquidate(liquidateDto.getIsLiquidate())
+                .channelCode(liquidateDto.getChannelCode())
+                .build();
+    }
+
+    public static TransactionModel mapToModel(TopupDto topupDto, String token){
+
+        return TransactionModel
+                .builder()
+                .tranxRef(topupDto.getTranxRef())
+                .benefAccountNo(topupDto.getIban())
+                .debitAccountNo(topupDto.getIban())
+                .tranCrncy(topupDto.getTrnaxCrcy())
+                .tranType(topupDto.getTranxType())
+                .userToken(token)
+                .tranNarration(topupDto.getTranxNaration())
+                .channelCode(topupDto.getChannelCode())
                 .build();
     }
 
@@ -42,6 +78,7 @@ public class TransactionMapper {
 
         return Transaction
                 .builder()
+                .status(transactionModel.getStatus())
                 .amount(transactionModel.getAmount())
                 .paymentReference(transactionModel.getPaymentReference())
                 .benefAccountNo(transactionModel.getBenefAccountNo())

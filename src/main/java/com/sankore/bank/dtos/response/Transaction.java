@@ -9,6 +9,7 @@ import lombok.Data;
 @Builder
 public class Transaction {
 
+    private String status;
     private final BigDecimal amount;
     private final String benefAccountNo;
     private final String debitAccountNo;

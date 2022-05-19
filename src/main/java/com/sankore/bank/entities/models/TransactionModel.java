@@ -35,6 +35,7 @@ public class TransactionModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private String status;
     private BigDecimal amount;
     private String benefAccountNo;
     private String debitAccountNo;
@@ -46,6 +47,8 @@ public class TransactionModel {
     private String tranxRef;
     private String userToken;
     private Long userId;
+    private Boolean isLiquidate;
+    private Boolean liquidityApproval;
 
     @CreationTimestamp
     private Date performedAt;

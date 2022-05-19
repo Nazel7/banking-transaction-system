@@ -3,6 +3,7 @@ package com.sankore.bank.services;
 import com.sankore.bank.auth.util.JwtUtil;
 import com.sankore.bank.configs.TranxMessageConfig;
 import com.sankore.bank.contants.ChannelConsts;
+import com.sankore.bank.dtos.request.LiquidateDto;
 import com.sankore.bank.dtos.request.TopupDto;
 import com.sankore.bank.dtos.request.TransferDto;
 import com.sankore.bank.dtos.request.WithrawalDto;
@@ -137,6 +138,7 @@ public class TransactionService {
             log.info("::: Account has been debited with iban: [{}]", debitedAccount.getIban());
             log.info("::: Account has been credited with iban: [{}] ", creditedAccount.getIban());
             log.info(mMessageConfig.getTransfer_successful());
+            transactionModel.setStatus(TranxStatus.SUCCESSFUL.name());
             TransactionModel savedTransaction = mTransactionRepo.save(transactionModel);
             log.info("::: FundTransfer LogModel audited successfully");
 
@@ -185,7 +187,9 @@ public class TransactionService {
                 token = token.split(" ")[1];
             }
             NotificationLog notificationModel = new NotificationLog();
+            DataInfo data = new DataInfo();
             boolean isRequestValid = BaseUtil.isRequestSatisfied(topupDto);
+            final TransactionModel transactionModel = TransactionMapper.mapToModel(topupDto, token);
 
             if (!isRequestValid) {
                 log.error("::: TopUp request error with payload: [{}]", topupDto);
@@ -205,12 +209,23 @@ public class TransactionService {
             log.info("Account with iban: [{}] topped up", topedAccount.getIban());
             mAccountRepo.save(creditAccount);
 
+            transactionModel.setStatus(TranxStatus.SUCCESSFUL.name());
+            TransactionModel savedLogModel = mTransactionRepo.save(transactionModel);
+            log.info("::: FundAccount LogModel audited successfully with paylaod: [{}]",savedLogModel);
+
+            String notificationMessage =
+                    String.format("Your account %s has been credit with sum of [%s%s] only ",
+                            creditAccount.getIban(),
+                            creditAccount.getCurrency(),
+                            topupDto.getAmount());
+            data.setMessage(notificationMessage);
+            notificationModel.setData(data);
             notificationModel.setInitiator(topedAccount.getUserModel().getFirstName().concat(" ")
                     .concat(topedAccount.getUserModel().getLastName()));
             notificationModel.setEventType(TransType.DEPOSIT.name());
             notificationModel.setChannelCode(ChannelConsts.VENDOR_CHANNEL);
             notificationModel.setTranxDate(new Date());
-            notificationModel.setTranxRef("FW" + UUID.randomUUID().toString());
+            notificationModel.setTranxRef(topupDto.getTranxRef());
 
             final NotificationLogEvent eventLog = new NotificationLogEvent(this, notificationModel);
             mEventPublisher.publishEvent(eventLog);
@@ -239,6 +254,7 @@ public class TransactionService {
                 token = token.split(" ")[1];
             }
             NotificationLog notificationLog = new NotificationLog();
+            DataInfo data = new DataInfo();
             boolean isRequestValid = BaseUtil.isRequestSatisfied(withrawalDto);
             if (!isRequestValid) {
                 log.error("::: FundWithdrawal request error with payload: [{}]", withrawalDto);
@@ -287,15 +303,23 @@ public class TransactionService {
             AccountModel debitedAccountSaved = mAccountRepo.save(debitedAccount);
             log.info("::: Account debit updated successfully with payload`; [{}]", debitedAccountSaved);
 
+            transactionModel.setStatus(TranxStatus.SUCCESSFUL.name());
             TransactionModel savedLogModel = mTransactionRepo.save(transactionModel);
             log.info("::: FundWithdrawal LogModel audited successfully with paylaod: [{}]",savedLogModel);
 
+            String notificationMessage =
+                    String.format("Your account %s has been debited with sum of [%s%s] only ",
+                            debitedAccount.getIban(),
+                            debitedAccount.getCurrency(),
+                            withrawalDto.getAmount());
+            data.setMessage(notificationMessage);
+            notificationLog.setData(data);
             notificationLog.setInitiator(debitedAccountSaved.getUserModel().getFirstName().concat(" ")
                     .concat(debitedAccountSaved.getUserModel().getLastName()));
             notificationLog.setEventType(TransType.WITHDRAWAL.name());
             notificationLog.setChannelCode(ChannelConsts.VENDOR_CHANNEL);
             notificationLog.setTranxDate(new Date());
-            notificationLog.setTranxRef("FW" + UUID.randomUUID().toString());
+            notificationLog.setTranxRef(withrawalDto.getTranxRef());
 
             final NotificationLogEvent
                     notificationLogEvent = new NotificationLogEvent(this, notificationLog);
@@ -313,7 +337,7 @@ public class TransactionService {
 
     }
 
-    public Account doLiquidateAccount(WithrawalDto withrawalDto, HttpServletRequest request) {
+    public Account doLiquidateAccount(LiquidateDto liquidateDto, HttpServletRequest request) throws TransferNotValidException {
 
         try {
 
@@ -321,17 +345,16 @@ public class TransactionService {
             if (token.contains("Bearer")) {
                 token = token.split(" ")[1];
             }
-            if (!withrawalDto.getIsLiquidate()) {
 
-            }
             NotificationLog notificationLog = new NotificationLog();
-            boolean isRequestValid = BaseUtil.isRequestSatisfied(withrawalDto);
+            DataInfo data = new DataInfo();
+            boolean isRequestValid = BaseUtil.isRequestSatisfied(liquidateDto);
             if (!isRequestValid) {
-                log.error("::: FundWithdrawal request error with payload: [{}]", withrawalDto);
+                log.error("::: AccountLiquidation request error with payload: [{}]", liquidateDto);
                 throw new IllegalArgumentException("TopUp request error with payload");
             }
 
-            AccountModel accountModel = mAccountRepo.findAccountModelByIban(withrawalDto.getIban());
+            AccountModel accountModel = mAccountRepo.findAccountModelByIban(liquidateDto.getIban());
 
             log.info("::: About to validate Account owner.....");
             String userName = jwtUtil.extractUsername(token);
@@ -341,8 +364,7 @@ public class TransactionService {
             }
 
             // Very if account is active not close or debit freeze
-            boolean isAccountStatusVerified =
-                    BaseUtil.verifyAccount(accountModel);
+            boolean isAccountStatusVerified = BaseUtil.verifyAccount(accountModel);
             log.info("::: Account Status verified: [{}] :::", isAccountStatusVerified);
 
             if (!isAccountStatusVerified) {
@@ -350,28 +372,37 @@ public class TransactionService {
                 throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
             }
 
-            final TransactionModel transactionModel = TransactionMapper.mapToModel(withrawalDto, token);
+            final TransactionModel transactionModel = TransactionMapper.mapToModel(liquidateDto, token);
 
 
-            final AccountModel debitedAccount = accountModel.withdraw(withrawalDto.getAmount());
+
+            final AccountModel debitedAccount = accountModel.withdraw(accountModel.getBalance());
 
             if (debitedAccount == null) {
-                log.error("::: Transfer failed insufficient balance.");
+                log.error("::: AccountLiquidation withdrawal failed, insufficient balance.");
                 throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
             }
 
             AccountModel debitedAccountSaved = mAccountRepo.save(debitedAccount);
             log.info("::: Account debit updated successfully with payload`; [{}]", debitedAccountSaved);
 
+            transactionModel.setStatus(TranxStatus.SUCCESSFUL.name());
             TransactionModel savedLogModel = mTransactionRepo.save(transactionModel);
             log.info("::: FundWithdrawal LogModel audited successfully with paylaod: [{}]",savedLogModel);
 
+            String notificationMessage =
+                    String.format("Your account %s has been liquidated with account total sum of [%s%s] only ",
+                            debitedAccount.getIban(),
+                            debitedAccount.getCurrency(),
+                            accountModel.getBalance());
+            data.setMessage(notificationMessage);
+            notificationLog.setData(data);
             notificationLog.setInitiator(debitedAccountSaved.getUserModel().getFirstName().concat(" ")
                     .concat(debitedAccountSaved.getUserModel().getLastName()));
             notificationLog.setEventType(TransType.WITHDRAWAL.name());
             notificationLog.setChannelCode(ChannelConsts.VENDOR_CHANNEL);
             notificationLog.setTranxDate(new Date());
-            notificationLog.setTranxRef("FW" + UUID.randomUUID().toString());
+            notificationLog.setTranxRef(liquidateDto.getTranxRef());
 
             final NotificationLogEvent
                     notificationLogEvent = new NotificationLogEvent(this, notificationLog);
@@ -386,7 +417,6 @@ public class TransactionService {
             ex.printStackTrace();
             throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
         }
-
 
     }
 

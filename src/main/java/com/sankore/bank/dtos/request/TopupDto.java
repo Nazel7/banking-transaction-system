@@ -12,5 +12,7 @@ public class TopupDto {
     private String channelCode;
     private String tranxType;
     public OriginatorKyc originatorKyc;
+    private String trnaxCrcy;
+    private String tranxNaration;
 
 }
