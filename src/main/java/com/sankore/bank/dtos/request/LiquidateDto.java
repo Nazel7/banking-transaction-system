@@ -5,14 +5,16 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
-public class WithrawalDto {
+public class LiquidateDto {
 
-    private BigDecimal amount;
     private String iban;
     private String tranxRef;
     private String channelCode;
     private String tranxType;
     private String tranxCrncy;
     private String tranxNaration;
+    private Boolean isLiquidate;
+    private Boolean liquidityApproval;
     private String verificationCode;
+
 }

@@ -1,10 +1,7 @@
 package com.sankore.bank.utils;
 
 import com.sankore.bank.contants.ChannelConsts;
-import com.sankore.bank.dtos.request.SignUpDto;
-import com.sankore.bank.dtos.request.TopupDto;
-import com.sankore.bank.dtos.request.TransferDto;
-import com.sankore.bank.dtos.request.WithrawalDto;
+import com.sankore.bank.dtos.request.*;
 import com.sankore.bank.entities.models.AccountModel;
 import com.sankore.bank.entities.models.UserModel;
 import com.sankore.bank.enums.AccountStatus;
@@ -141,8 +138,7 @@ public class BaseUtil {
             Objects.requireNonNull(withrawalDto.getTranxType());
             Objects.requireNonNull(withrawalDto.getChannelCode());
             Objects.requireNonNull(withrawalDto.getTranxCrncy());
-
-
+            Objects.requireNonNull(withrawalDto.getVerificationCode());
 
             log.info("::: Satisfied requestBody: [{}] :::", withrawalDto);
             return true;
@@ -150,6 +146,32 @@ public class BaseUtil {
         } catch (NullPointerException ex) {
             ex.printStackTrace();
             log.debug("::: Unsatisfied requestBody [{}]:::", withrawalDto);
+            return false;
+        }
+
+    }
+
+    public static boolean isRequestSatisfied(LiquidateDto liquidateDto) {
+        try{
+
+            Objects.requireNonNull(liquidateDto.getIban());
+            Objects.requireNonNull(liquidateDto.getChannelCode());
+            Objects.requireNonNull(liquidateDto.getTranxRef());
+            Objects.requireNonNull(liquidateDto.getTranxType());
+            Objects.requireNonNull(liquidateDto.getChannelCode());
+            Objects.requireNonNull(liquidateDto.getTranxCrncy());
+            Objects.requireNonNull(liquidateDto.getVerificationCode());
+            if (!liquidateDto.getIsLiquidate() || !liquidateDto.getLiquidityApproval()) {
+                log.error("::: Liquidity key error.");
+                return false;
+            }
+
+            log.info("::: Satisfied requestBody: [{}] :::", liquidateDto);
+            return true;
+
+        } catch (NullPointerException ex) {
+            ex.printStackTrace();
+            log.debug("::: Unsatisfied requestBody [{}]:::", liquidateDto);
             return false;
         }
 

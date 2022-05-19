@@ -44,8 +44,6 @@ import lombok.experimental.Tolerate;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AccountModel {
 
-    private static final BigDecimal OVER_DRAFT = new BigDecimal(100);
-
     @Id
     @Basic(optional = false)
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -102,7 +100,7 @@ public class AccountModel {
     public AccountModel withdraw(BigDecimal amount)
             throws AccountException {
 
-        if (balance.add(OVER_DRAFT).compareTo(amount) > 0) {
+        if (balance.compareTo(amount) > 0) {
             this.balance = this.balance.subtract(amount);
         } else {
             throw new AccountException("insufficient account balance !");

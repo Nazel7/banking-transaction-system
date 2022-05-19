@@ -52,7 +52,7 @@ public class TransactionService {
     private final TranxMessageConfig mMessageConfig;
 
     public Transaction doFundTransfer(TransferDto transferDto, HttpServletRequest request)
-            throws AccountException, TransferNotValidException, UserNotFoundException {
+            throws TransferNotValidException {
         log.info("::: In tranferFund.....");
 
         try {
@@ -229,7 +229,7 @@ public class TransactionService {
     }
 
 
-    public Account doFundWithdrawal(WithrawalDto withrawalDto, HttpServletRequest request) throws AccountException, IllegalAccessException, TransferNotValidException {
+    public Account doFundWithdrawal(WithrawalDto withrawalDto, HttpServletRequest request) throws TransferNotValidException {
         log.info("::: In doFundWithdrawal.....");
 
         try {
@@ -252,6 +252,12 @@ public class TransactionService {
             if (!userName.equals(accountModel.getUserModel().getEmail())) {
                 log.error("::: Account broken, Invalid Account access");
                 throw new IllegalAccessException("Account broken, Invalid Account access");
+            }
+
+            // Verify transaction token is valid
+            if (!accountModel.getUserModel().getVerificationCode().equals(withrawalDto.getVerificationCode())) {
+                log.error("::: VerificationCode error");
+                throw new IllegalArgumentException("VerificationCode error");
             }
 
             // Very if account is active not close or debit freeze
@@ -307,7 +313,82 @@ public class TransactionService {
 
     }
 
+    public Account doLiquidateAccount(WithrawalDto withrawalDto, HttpServletRequest request) {
 
+        try {
+
+            String token = request.getHeader("Authorization");
+            if (token.contains("Bearer")) {
+                token = token.split(" ")[1];
+            }
+            if (!withrawalDto.getIsLiquidate()) {
+
+            }
+            NotificationLog notificationLog = new NotificationLog();
+            boolean isRequestValid = BaseUtil.isRequestSatisfied(withrawalDto);
+            if (!isRequestValid) {
+                log.error("::: FundWithdrawal request error with payload: [{}]", withrawalDto);
+                throw new IllegalArgumentException("TopUp request error with payload");
+            }
+
+            AccountModel accountModel = mAccountRepo.findAccountModelByIban(withrawalDto.getIban());
+
+            log.info("::: About to validate Account owner.....");
+            String userName = jwtUtil.extractUsername(token);
+            if (!userName.equals(accountModel.getUserModel().getEmail())) {
+                log.error("::: Account broken, Invalid Account access");
+                throw new IllegalAccessException("Account broken, Invalid Account access");
+            }
+
+            // Very if account is active not close or debit freeze
+            boolean isAccountStatusVerified =
+                    BaseUtil.verifyAccount(accountModel);
+            log.info("::: Account Status verified: [{}] :::", isAccountStatusVerified);
+
+            if (!isAccountStatusVerified) {
+                log.info("::: Transaction failed");
+                throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
+            }
+
+            final TransactionModel transactionModel = TransactionMapper.mapToModel(withrawalDto, token);
+
+
+            final AccountModel debitedAccount = accountModel.withdraw(withrawalDto.getAmount());
+
+            if (debitedAccount == null) {
+                log.error("::: Transfer failed insufficient balance.");
+                throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
+            }
+
+            AccountModel debitedAccountSaved = mAccountRepo.save(debitedAccount);
+            log.info("::: Account debit updated successfully with payload`; [{}]", debitedAccountSaved);
+
+            TransactionModel savedLogModel = mTransactionRepo.save(transactionModel);
+            log.info("::: FundWithdrawal LogModel audited successfully with paylaod: [{}]",savedLogModel);
+
+            notificationLog.setInitiator(debitedAccountSaved.getUserModel().getFirstName().concat(" ")
+                    .concat(debitedAccountSaved.getUserModel().getLastName()));
+            notificationLog.setEventType(TransType.WITHDRAWAL.name());
+            notificationLog.setChannelCode(ChannelConsts.VENDOR_CHANNEL);
+            notificationLog.setTranxDate(new Date());
+            notificationLog.setTranxRef("FW" + UUID.randomUUID().toString());
+
+            final NotificationLogEvent
+                    notificationLogEvent = new NotificationLogEvent(this, notificationLog);
+            mEventPublisher.publishEvent(notificationLogEvent);
+            log.info("::: notification sent to recipient: [{}] DB locator :::",
+                    notificationLogEvent.getNotificationLog());
+
+            return AccountMapper.mapToDomain(debitedAccount, TranxStatus.SUCCESSFUL.name());
+
+
+        }catch (Exception ex) {
+            ex.printStackTrace();
+            throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
+        }
+
+
+    }
 
     // TODO: UPDATE FUND_ACCOUNT  AND TRANSFER_FUND SERVICE
     // TODO: DIRECT_DEBIT
