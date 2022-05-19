@@ -49,12 +49,19 @@ public class InvestmentMapper {
         @UpdateTimestamp
         private String updatedAt;
 
+        InvestmentPlan investmentPlan = InvestmentPlan.getInvestmentPlan(investmentmentDto.getPlan());
         return InvestmentModel
                 .builder()
                 .status(TranxStatus.OPEN.name())
                 .investedAmount(investmentmentDto.getAmount())
                 .iban(investmentmentDto.getIban())
                 .plan(investmentmentDto.getPlan())
+                .intRateMonth(investmentPlan.getIntRateMonth())
+                .lastName(investmentmentDto.getLastName())
+                .firName(investmentmentDto.getFirName())
+                .middleName(investmentmentDto.getMiddleName())
+                .investmentRefNo(investmentmentDto.getTranxRef())
+                .startDate(investmentmentDto.getStartDate())
 
                 .build();
 
