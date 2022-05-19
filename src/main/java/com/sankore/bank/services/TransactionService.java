@@ -231,7 +231,7 @@ public class TransactionService {
 
             final NotificationLogEvent eventLog = new NotificationLogEvent(this, notificationModel);
             mEventPublisher.publishEvent(eventLog);
-            log.info("::: notification sent to recipient: [{}] DB locator :::",
+            log.info("::: notification sent successfully, data: [{}]",
                     eventLog.getNotificationLog());
 
             return AccountMapper.mapToDomain(topedAccount, TranxStatus.SUCCESSFUL.name());
@@ -326,7 +326,7 @@ public class TransactionService {
             final NotificationLogEvent
                     notificationLogEvent = new NotificationLogEvent(this, notificationLog);
             mEventPublisher.publishEvent(notificationLogEvent);
-            log.info("::: notification sent to recipient: [{}] DB locator :::",
+            log.info("::: notification sent successfully, data: [{}]",
                     notificationLogEvent.getNotificationLog());
 
             return AccountMapper.mapToDomain(debitedAccount, TranxStatus.SUCCESSFUL.name());
@@ -377,8 +377,6 @@ public class TransactionService {
 
             final TransactionModel transactionModel = TransactionMapper.mapToModel(liquidateDto, token);
 
-
-
             final AccountModel debitedAccount = accountModel.withdraw(accountModel.getBalance());
 
             if (debitedAccount == null) {
@@ -410,7 +408,7 @@ public class TransactionService {
             final NotificationLogEvent
                     notificationLogEvent = new NotificationLogEvent(this, notificationLog);
             mEventPublisher.publishEvent(notificationLogEvent);
-            log.info("::: notification sent to recipient: [{}] DB locator :::",
+            log.info("::: notification sent successfully, data: [{}]",
                     notificationLogEvent.getNotificationLog());
 
             return AccountMapper.mapToDomain(debitedAccount, TranxStatus.SUCCESSFUL.name());
@@ -433,6 +431,8 @@ public class TransactionService {
                 token = token.split(" ")[1];
             }
 
+            NotificationLog notificationLog = new NotificationLog();
+            DataInfo data = new DataInfo();
             boolean isInvementPayloadValid = BaseUtil.isRequestSatisfied(dto);
             if (!isInvementPayloadValid) {
                 log.error("::: RequestPayload error with data: [{}]", dto);
@@ -467,19 +467,20 @@ public class TransactionService {
                             accountModel.getIban(),
                             accountModel.getCurrency(),
                             dto.getAmount());
+
             data.setMessage(notificationMessage);
             notificationLog.setData(data);
-            notificationLog.setInitiator(debitedAccountSaved.getUserModel().getFirstName().concat(" ")
-                    .concat(debitedAccountSaved.getUserModel().getLastName()));
+            notificationLog.setInitiator(accountModel.getUserModel().getFirstName().concat(" ")
+                    .concat(accountModel.getUserModel().getLastName()));
             notificationLog.setEventType(TransType.WITHDRAWAL.name());
             notificationLog.setChannelCode(ChannelConsts.VENDOR_CHANNEL);
-            notificationLog.setTranxDate(new Date());
-            notificationLog.setTranxRef(liquidateDto.getTranxRef());
+            notificationLog.setTranxDate(investedModel.getCreatedAt());
+            notificationLog.setTranxRef(investedModel.getInvestmentRefNo());
 
             final NotificationLogEvent
                     notificationLogEvent = new NotificationLogEvent(this, notificationLog);
             mEventPublisher.publishEvent(notificationLogEvent);
-            log.info("::: notification sent to recipient: [{}] DB locator :::",
+            log.info("::: notification sent successfully, data: [{}]",
                     notificationLogEvent.getNotificationLog());
 
 
@@ -488,6 +489,8 @@ public class TransactionService {
             ex.printStackTrace();
             throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
         }
+
+
 
     }
     // TODO: UPDATE FUND_ACCOUNT  AND TRANSFER_FUND SERVICE
