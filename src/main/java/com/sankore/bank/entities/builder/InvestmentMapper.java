@@ -54,6 +54,7 @@ public class InvestmentMapper {
                 .status(TranxStatus.OPEN.name())
                 .investedAmount(investmentmentDto.getAmount())
                 .iban(investmentmentDto.getIban())
+                .plan(investmentmentDto.getPlan())
 
                 .build();
 

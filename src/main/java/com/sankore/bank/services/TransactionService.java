@@ -9,6 +9,7 @@ import com.sankore.bank.dtos.response.Transaction;
 import com.sankore.bank.dtos.response.TransferNotValidException;
 import com.sankore.bank.dtos.response.UserNotFoundException;
 import com.sankore.bank.entities.builder.AccountMapper;
+import com.sankore.bank.entities.builder.InvestmentMapper;
 import com.sankore.bank.entities.builder.TransactionMapper;
 import com.sankore.bank.entities.models.AccountModel;
 import com.sankore.bank.entities.models.InvestmentModel;
@@ -448,7 +449,7 @@ public class TransactionService {
                 throw new IllegalArgumentException("Insufficient Balance for Investment");
             }
 
-            InvestmentModel investmentModel =
+            InvestmentModel investmentModel = InvestmentMapper.mapDtoToModel()
 
         }catch (Exception ex) {
             ex.printStackTrace();
