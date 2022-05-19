@@ -301,6 +301,10 @@ public class TransactionService {
             }
 
             final TransactionModel transactionModel = TransactionMapper.mapToModel(withrawalDto, token);
+            if (!userModel.getVerificationCode().equals(withrawalDto.getVerificationCode())) {
+                log.error("::: Account broken, Invalid access...");
+                throw  new IllegalAccessException("Account broken, Invalid access");
+            }
 
             final AccountModel debitedAccount = accountModel.withdraw(withrawalDto.getAmount());
 
@@ -384,6 +388,10 @@ public class TransactionService {
             }
 
             final TransactionModel transactionModel = TransactionMapper.mapToModel(liquidateDto, token);
+            if (!userModel.getVerificationCode().equals(liquidateDto.getVerificationCode())) {
+                log.error("::: Account broken, Invalid access...");
+                throw  new IllegalAccessException("Account broken, Invalid access");
+            }
 
             final AccountModel debitedAccount = accountModel.withdraw(accountModel.getBalance());
 
