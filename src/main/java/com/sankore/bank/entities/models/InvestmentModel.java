@@ -22,8 +22,6 @@ import java.util.Objects;
 @Setter
 @AllArgsConstructor
 @Access(AccessType.FIELD)
-@ToString
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class InvestmentModel {
 
     @Id

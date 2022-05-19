@@ -2,6 +2,7 @@ package com.sankore.bank.entities.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
@@ -15,10 +16,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
 import lombok.experimental.Tolerate;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.CreatedBy;
@@ -26,10 +23,10 @@ import org.springframework.data.annotation.CreatedBy;
 @Entity
 @Builder
 @Table(name = "transactions")
-@Data
+@Getter
+@Setter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Access(AccessType.FIELD)
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class TransactionModel {
 
     @Id

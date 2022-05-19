@@ -7,6 +7,8 @@ import javax.validation.constraints.Email;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Tolerate;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -15,7 +17,8 @@ import java.util.Date;
 import java.util.List;
 
 @Builder
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "customers", indexes = {
         @Index(name = "email_index", columnList = "email"),

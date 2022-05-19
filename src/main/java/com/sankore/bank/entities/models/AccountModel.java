@@ -41,8 +41,6 @@ import lombok.experimental.Tolerate;
 @Getter
 @Setter
 @Access(AccessType.FIELD)
-@ToString
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class AccountModel {
 
     @Id
