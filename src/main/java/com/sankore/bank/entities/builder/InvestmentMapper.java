@@ -4,9 +4,11 @@ import com.sankore.bank.dtos.request.InvestmentmentDto;
 import com.sankore.bank.dtos.response.Account;
 import com.sankore.bank.entities.models.AccountModel;
 import com.sankore.bank.entities.models.InvestmentModel;
+import com.sankore.bank.enums.InvestmentPlan;
 import com.sankore.bank.enums.TranxStatus;
 import lombok.AccessLevel;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -14,6 +16,7 @@ import javax.persistence.Column;
 import java.math.BigDecimal;
 import java.util.Date;
 
+@Slf4j
 public class InvestmentMapper {
 
     public static InvestmentModel mapDtoToModel(AccountModel accountModel,

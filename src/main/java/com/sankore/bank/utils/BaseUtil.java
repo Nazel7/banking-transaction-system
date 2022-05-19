@@ -7,6 +7,7 @@ import com.sankore.bank.entities.models.UserModel;
 import com.sankore.bank.enums.AccountStatus;
 import com.sankore.bank.enums.AccountType;
 import com.sankore.bank.enums.Currency;
+import com.sankore.bank.enums.InvestmentPlan;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
@@ -206,6 +207,12 @@ public class BaseUtil {
             Objects.requireNonNull(investmentmentDto.getEndDate());
             Objects.requireNonNull(investmentmentDto.getFirName());
             Objects.requireNonNull(investmentmentDto.getLastName());
+
+            InvestmentPlan investmentPlan = InvestmentPlan.getInvestmentPlan(investmentmentDto.getPlan());
+            if (!(investmentPlan.getMinAmount() <= investmentmentDto.getAmount().doubleValue())) {
+                log.error("::: Invalid Investment Amount, please try again later......");
+                return false;
+            }
 
             log.info("::: Satisfied requestBody: [{}] :::", investmentmentDto);
             return true;
