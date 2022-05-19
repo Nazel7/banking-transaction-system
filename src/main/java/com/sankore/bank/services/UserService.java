@@ -38,9 +38,10 @@ public class UserService {
 
             throw new UserNotFoundException("Unsatisfied request body");
         }
-
+        log.info("::: About to map to model......");
         UserModel userMapped = UserMapper.mapToModel(signUpDto);
         UserModel userModel = upgradeSigningUpUser(userMapped);
+        System.out.println("I am here");
 
         AccountModel accountModel = BaseUtil.generateAccountNumber(userModel, signUpDto.getAccountType());
         accountModel.setUserModel(userModel);

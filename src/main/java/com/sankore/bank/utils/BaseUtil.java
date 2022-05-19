@@ -57,6 +57,10 @@ public class BaseUtil {
             Objects.requireNonNull(signUpDto.getPhone());
             Objects.requireNonNull(signUpDto.getEmail());
             Objects.requireNonNull(signUpDto.getAccountType());
+            Objects.requireNonNull(signUpDto.getVerifiedEmail());
+            Objects.requireNonNull(signUpDto.getVerifiedHomeAddress());
+            Objects.requireNonNull(signUpDto.getVerifiedBvn());
+            Objects.requireNonNull(signUpDto.getVerifiedPhone());
             boolean isEmailValid = TransactionObjFormatter.isEmailMatch(signUpDto.getEmail());
             boolean isPhoneNumValid = TransactionObjFormatter.isMatchNigerianPhoneNum(signUpDto.getPhone());
             if (!isEmailValid || !isPhoneNumValid) {

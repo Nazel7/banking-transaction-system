@@ -381,6 +381,7 @@ public class TransactionService {
                 throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
             }
 
+            debitedAccount.setIsLiquidated(true);
             AccountModel debitedAccountSaved = mAccountRepo.save(debitedAccount);
             log.info("::: Account debit updated successfully with payload`; [{}]", debitedAccountSaved);
 
