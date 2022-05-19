@@ -103,7 +103,7 @@ public class AccountModel {
         if (balance.compareTo(amount) > 0) {
             this.balance = this.balance.subtract(amount);
         } else {
-            throw new AccountException("insufficient account balance !");
+            throw new AccountException("insufficient account balance!");
         }
         return this;
     }

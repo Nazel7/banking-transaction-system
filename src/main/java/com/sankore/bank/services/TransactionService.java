@@ -3,10 +3,7 @@ package com.sankore.bank.services;
 import com.sankore.bank.auth.util.JwtUtil;
 import com.sankore.bank.configs.TranxMessageConfig;
 import com.sankore.bank.contants.ChannelConsts;
-import com.sankore.bank.dtos.request.LiquidateDto;
-import com.sankore.bank.dtos.request.TopupDto;
-import com.sankore.bank.dtos.request.TransferDto;
-import com.sankore.bank.dtos.request.WithrawalDto;
+import com.sankore.bank.dtos.request.*;
 import com.sankore.bank.dtos.response.Account;
 import com.sankore.bank.dtos.response.Transaction;
 import com.sankore.bank.dtos.response.TransferNotValidException;
@@ -208,7 +205,7 @@ public class TransactionService {
             }
             AccountModel topedAccount = creditAccount.deposit(topupDto.getAmount());
             log.info("Account with iban: [{}] topped up", topedAccount.getIban());
-            mAccountRepo.save(creditAccount);
+            mAccountRepo.save(topedAccount);
 
             transactionModel.setStatus(TranxStatus.SUCCESSFUL.name());
             TransactionModel savedLogModel = mTransactionRepo.save(transactionModel);
@@ -421,8 +418,14 @@ public class TransactionService {
 
     }
 
-    public Account doInvestment()
+    public Account doInvestment(InvestmentmentDto dto, HttpServletRequest request) {
+        log.info("::: In doInvestment.....");
+        String token = request.getHeader("Authorization");
 
+
+
+
+    }
     // TODO: UPDATE FUND_ACCOUNT  AND TRANSFER_FUND SERVICE
     // TODO: DIRECT_DEBIT
     // TODO: INVESTMENT ACCOUNT
