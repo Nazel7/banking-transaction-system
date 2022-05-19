@@ -14,8 +14,7 @@ import java.util.Date;
 @Slf4j
 public class InvestmentMapper {
 
-    public static InvestmentModel mapDtoToModel(AccountModel accountModel,
-                                                InvestmentmentDto investmentmentDto) throws ParseException {
+    public static InvestmentModel mapDtoToModel(InvestmentmentDto investmentmentDto) throws ParseException {
 
         InvestmentPlan investmentPlan = InvestmentPlan.getInvestmentPlan(investmentmentDto.getPlan());
         Date startDateInv = TransactionObjFormatter.getDate(investmentmentDto.getStartDate());

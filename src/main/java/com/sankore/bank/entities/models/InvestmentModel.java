@@ -9,6 +9,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.Objects;
 
 @Entity
 @Table(indexes = {
@@ -106,4 +107,24 @@ public class InvestmentModel {
             throw new RuntimeException("Not a valid amount for profit withdrawal");
         }
     }
+
+    @Override
+    public boolean equals(Object o) {
+
+        if (this == o) {
+            return true;
+        }
+        if (o == null || this.getClass() != o.getClass()) {
+            return false;
+        }
+        InvestmentModel investmentModel = (InvestmentModel) o;
+        return Objects.equals(iban, investmentModel.iban);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(investedAmount, iban, createdAt);
+    }
+
 }

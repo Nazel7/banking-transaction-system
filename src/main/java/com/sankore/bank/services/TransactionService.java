@@ -427,6 +427,7 @@ public class TransactionService {
         log.info("::: In doInvestment.....");
 
         try {
+
             String token = request.getHeader("Authorization");
             if (token.contains("Bearer")) {
                 token = token.split(" ")[1];
@@ -437,6 +438,14 @@ public class TransactionService {
                 log.error("::: RequestPayload error with data: [{}]", dto);
                 throw new IllegalArgumentException("RequestPayload error");
             }
+            // Check if investment Type already Opened
+            final InvestmentModel openInvestemnt =
+                    mInvestmentRepo.getInvestmentModelByStatusAndPlan(TranxStatus.OPEN.name(), dto.getPlan());
+            if (openInvestemnt != null) {
+                log.error("::: Your investment is currently Open on this Plan, please try order plans . Thank you");
+                throw new RuntimeException("Your investment is currently Open on this Plan, please try order plans ");
+            }
+
             String userName = jwtUtil.extractUsername(token);
             AccountModel accountModel = mAccountRepo.findAccountModelByIban(dto.getIban());
             if (!userName.equals(accountModel.getUserModel().getEmail())) {
@@ -449,15 +458,36 @@ public class TransactionService {
                 throw new IllegalArgumentException("Insufficient Balance for Investment");
             }
 
-            InvestmentModel investmentModel = InvestmentMapper.mapDtoToModel()
+            final InvestmentModel investmentModel = InvestmentMapper.mapDtoToModel(dto);
+            InvestmentModel investedModel = mInvestmentRepo.save(investmentModel);
+            log.info("::: Investemnt is successful with payload: [{}]", investedModel);
+
+            String notificationMessage =
+                    String.format("Your Investment from your account: [%s] is successful with Amount: [%s%s] only ",
+                            accountModel.getIban(),
+                            accountModel.getCurrency(),
+                            dto.getAmount());
+            data.setMessage(notificationMessage);
+            notificationLog.setData(data);
+            notificationLog.setInitiator(debitedAccountSaved.getUserModel().getFirstName().concat(" ")
+                    .concat(debitedAccountSaved.getUserModel().getLastName()));
+            notificationLog.setEventType(TransType.WITHDRAWAL.name());
+            notificationLog.setChannelCode(ChannelConsts.VENDOR_CHANNEL);
+            notificationLog.setTranxDate(new Date());
+            notificationLog.setTranxRef(liquidateDto.getTranxRef());
+
+            final NotificationLogEvent
+                    notificationLogEvent = new NotificationLogEvent(this, notificationLog);
+            mEventPublisher.publishEvent(notificationLogEvent);
+            log.info("::: notification sent to recipient: [{}] DB locator :::",
+                    notificationLogEvent.getNotificationLog());
+
+
 
         }catch (Exception ex) {
             ex.printStackTrace();
             throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
         }
-
-
-
 
     }
     // TODO: UPDATE FUND_ACCOUNT  AND TRANSFER_FUND SERVICE
