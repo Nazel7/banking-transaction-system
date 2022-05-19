@@ -174,7 +174,7 @@ public class BaseUtil {
             Objects.requireNonNull(liquidateDto.getChannelCode());
             Objects.requireNonNull(liquidateDto.getTranxCrncy());
             Objects.requireNonNull(liquidateDto.getVerificationCode());
-            if (!liquidateDto.getIsLiquidate() || !liquidateDto.getLiquidityApproval()) {
+            if (!liquidateDto.getIsLiquidate() || !liquidateDto.getIsLiquidityApproval()) {
                 log.error("::: Liquidity key error.");
                 return false;
             }

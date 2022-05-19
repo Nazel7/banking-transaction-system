@@ -5,7 +5,7 @@ import com.sankore.bank.dtos.request.WithrawalDto;
 import com.sankore.bank.entities.models.TransactionModel;
 import com.sankore.bank.dtos.response.Transaction;
 import com.sankore.bank.dtos.request.TransferDto;
-import com.sankore.bank.enums.TranxStatus;
+import com.sankore.bank.enums.TransType;
 
 public class TransactionMapper {
 
@@ -36,7 +36,8 @@ public class TransactionMapper {
                 .benefAccountNo(withrawalDto.getIban())
                 .debitAccountNo(withrawalDto.getIban())
                 .tranCrncy(withrawalDto.getTranxCrncy())
-                .tranType(withrawalDto.getTranxType())
+                .tranType(withrawalDto.getTranxType().equals(TransType.WITHDRAWAL.name()) ?
+                        withrawalDto.getTranxType(): TransType.WITHDRAWAL.name())
                 .userToken(token)
                 .tranNarration(withrawalDto.getTranxNaration())
                 .channelCode(withrawalDto.getChannelCode())
@@ -50,10 +51,11 @@ public class TransactionMapper {
                 .benefAccountNo(liquidateDto.getIban())
                 .debitAccountNo(liquidateDto.getIban())
                 .tranCrncy(liquidateDto.getTranxCrncy())
-                .tranType(liquidateDto.getTranxType())
+                .tranType(!liquidateDto.getTranxType().equals(TransType.LIQUIDATE.name()) ?
+                        TransType.LIQUIDATE.name(): liquidateDto.getTranxType())
                 .userToken(token)
                 .tranNarration(liquidateDto.getTranxNaration())
-                .liquidityApproval(liquidateDto.getLiquidityApproval())
+                .liquidityApproval(liquidateDto.getIsLiquidityApproval())
                 .isLiquidate(liquidateDto.getIsLiquidate())
                 .channelCode(liquidateDto.getChannelCode())
                 .build();

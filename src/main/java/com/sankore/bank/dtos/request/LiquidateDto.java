@@ -14,7 +14,7 @@ public class LiquidateDto {
     private String tranxCrncy;
     private String tranxNaration;
     private Boolean isLiquidate;
-    private Boolean liquidityApproval;
+    private Boolean isLiquidityApproval;
     private String verificationCode;
 
 }
