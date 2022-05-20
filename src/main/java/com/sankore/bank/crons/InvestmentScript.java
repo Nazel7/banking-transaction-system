@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.LocalDate;
+import java.util.Date;
 
 @Slf4j
 @Component
@@ -33,24 +34,26 @@ public class InvestmentScript implements SchdeduleJob {
     @Override
     public void run() {
 
+        this.runInvestmentPlanScript(TranxStatus.OPEN.name(), InvestmentPlan.BRONZE.name());
+        this.runInvestmentPlanScript(TranxStatus.OPEN.name(), InvestmentPlan.SILVER.name());
+        this.runInvestmentPlanScript(TranxStatus.OPEN.name(), InvestmentPlan.GOLD.name());
 
     }
 
-    private void runBronzePlanScript() {
+    private void runInvestmentPlanScript(String status, String invPlan) {
 
         try {
             Pageable pageable = PageRequest.of(0, customSize);
             Page<InvestmentModel> investmentModels =
-                    investmentRepo.findByStatusAndPlan(TranxStatus.OPEN.name(),
-                            InvestmentPlan.BRONZE.name(), pageable);
+                    investmentRepo.findByStatusAndPlan(status,
+                            invPlan, pageable);
 
             log.info("::: About to process open investment from DB...");
             for (int i = 0; i <= investmentModels.getTotalPages(); i++) {
 
                 pageable = PageRequest.of(i, customSize);
                 investmentModels =
-                       investmentRepo.findByStatusAndPlan(TranxStatus.OPEN.name(),
-                               InvestmentPlan.BRONZE.name(), pageable);
+                        investmentRepo.findByStatusAndPlan(status, invPlan, pageable);
 
                 for (InvestmentModel investmentModel : investmentModels.getContent()) {
 
@@ -59,23 +62,28 @@ public class InvestmentScript implements SchdeduleJob {
                     long daysInMonth = currentDate.lengthOfMonth();
                     MathContext context = new MathContext(4);
                     final BigDecimal intrAmountForPlanRatio = new BigDecimal("0.01", context);
-                    final BigDecimal intrAmountForPlan =
+                    final BigDecimal montlyIntrForPlan =
                             intrAmountForPlanRatio.multiply(investmentModel.getInvestedAmount());
 
-                    // Get Month in Days
+                    // Get DailyInterest Amount
                     final BigDecimal dailyInterest =
+                            montlyIntrForPlan.divide(new BigDecimal(daysInMonth), context);
+                    InvestmentModel accruedIntModel = investmentModel.doAccruedInterest(dailyInterest);
 
+                    if (accruedIntModel == null) {
+                        log.info("Daily Profit Accrued error...");
+                        throw new RuntimeException("Daily Profit Accrued error. Date: " + new Date());
+                    }
+                    accruedIntModel = investmentRepo.save(accruedIntModel);
 
-
-
+                    log.info("::: Daily accrued interest is successful with payload: [{}]", accruedIntModel);
 
                 }
             }
-
-
 
                 }catch (Exception ex) {
             ex.printStackTrace();
         }
     }
+
 }

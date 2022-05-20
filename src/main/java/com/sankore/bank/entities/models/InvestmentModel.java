@@ -1,6 +1,6 @@
 package com.sankore.bank.entities.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.sankore.bank.utils.TransactionObjFormatter;
 import lombok.*;
 import lombok.experimental.Tolerate;
 import org.hibernate.annotations.CreationTimestamp;
@@ -9,6 +9,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.text.ParseException;
 import java.util.Date;
 import java.util.Objects;
 
@@ -109,6 +110,23 @@ public class InvestmentModel {
             throw new RuntimeException("Not a valid amount for profit withdrawal");
         }
     }
+
+
+    public InvestmentModel extendInvestment(String extentionDate) throws ParseException {
+        final Date date = TransactionObjFormatter.getDate(extentionDate);
+        this.setEndDate(date);
+
+        return this;
+    }
+
+    public InvestmentModel doAccruedInterest(BigDecimal dailyAccruedAmount) throws ParseException {
+
+        this.accruedBalance = this.accruedBalance.add(dailyAccruedAmount, new MathContext(4));
+
+        return this;
+    }
+
+
 
     @Override
     public boolean equals(Object o) {
