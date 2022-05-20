@@ -10,4 +10,7 @@ public interface InvestmentRepo extends JpaRepository<InvestmentModel, Long> {
     InvestmentModel getInvestmentModelByStatusAndPlan(String status, String plan);
 
     Page<InvestmentModel> findByStatusAndPlan(String status, String plan, Pageable pageable);
+
+    Page<InvestmentModel> findByStatus(String status, Pageable pageable);
+
 }

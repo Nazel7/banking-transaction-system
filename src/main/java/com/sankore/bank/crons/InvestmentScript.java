@@ -48,6 +48,10 @@ public class InvestmentScript implements SchdeduleJob {
                     investmentRepo.findByStatusAndPlan(status,
                             invPlan, pageable);
 
+            if (investmentModels.getContent().isEmpty()) {
+                return;
+            }
+
             log.info("::: About to process open investment from DB...");
             for (int i = 0; i <= investmentModels.getTotalPages(); i++) {
 
