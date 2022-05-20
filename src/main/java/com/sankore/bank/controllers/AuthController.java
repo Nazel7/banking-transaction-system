@@ -13,6 +13,7 @@ import com.sankore.bank.dtos.response.LogginResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,6 +26,8 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @RestController
@@ -40,15 +43,17 @@ public class AuthController {
 
     private final SecureUserRepo mSecureUserRepo;
 
+    @Async
     @ApiOperation(value = "::: welcome :::", notes = "application health check")
     @GetMapping(" ")
-    public String welcome() {
-        return "Welcome to Wayapaychat Banking Service !!";
+    public CompletableFuture<String> welcome() {
+        return CompletableFuture.completedFuture("Welcome to Sankore-Gafar Banking Service !!");
     }
 
+    @Async
     @ApiOperation(value = "::: generateToken :::", notes = "Login channel")
     @PostMapping(" ")
-    public ResponseEntity<LogginResponse> generateToken(@RequestBody LoginRequestUtil loginRequestUtil) throws Exception {
+    public CompletableFuture<ResponseEntity<LogginResponse>> generateToken(@RequestBody LoginRequestUtil loginRequestUtil) throws Exception {
         log.info("::: Login request processing :::");
         try {
             authenticationManager.authenticate(
@@ -68,6 +73,6 @@ public class AuthController {
         final LogginResponse
                 logginResponse = UserMapper.mapToDto(userModel, jwtUtil.generateToken(userDetails));
 
-        return new ResponseEntity<>(logginResponse, HttpStatus.OK);
+        return CompletableFuture.completedFuture(new ResponseEntity<>(logginResponse, HttpStatus.OK));
     }
 }
