@@ -151,7 +151,8 @@ public class BaseUtil {
             Objects.requireNonNull(withrawalDto.getChannelCode());
             Objects.requireNonNull(withrawalDto.getTranxCrncy());
             Objects.requireNonNull(withrawalDto.getVerificationCode());
-
+            Currency currency = Currency.getInvestmentPlan(withrawalDto.getTranxCrncy());
+            log.info("Currency: " + currency);
             log.info("::: Satisfied requestBody: [{}] :::", withrawalDto);
             return true;
 
@@ -174,6 +175,8 @@ public class BaseUtil {
             Objects.requireNonNull(liquidateDto.getChannelCode());
             Objects.requireNonNull(liquidateDto.getTranxCrncy());
             Objects.requireNonNull(liquidateDto.getVerificationCode());
+            Currency currency = Currency.getInvestmentPlan(liquidateDto.getTranxCrncy());
+            log.info("Currency: " + currency);
             if (!liquidateDto.getIsLiquidate() || !liquidateDto.getIsLiquidityApproval()) {
                 log.error("::: Liquidity key error.");
                 return false;
@@ -204,13 +207,13 @@ public class BaseUtil {
             Objects.requireNonNull(investmentmentDto.getEndDate());
             Objects.requireNonNull(investmentmentDto.getFirName());
             Objects.requireNonNull(investmentmentDto.getLastName());
-
             InvestmentPlan investmentPlan = InvestmentPlan.getInvestmentPlan(investmentmentDto.getPlan());
+            Currency currency = Currency.getInvestmentPlan(investmentmentDto.getCurrency());
+            log.info("Currency: " + currency);
             if (!(investmentPlan.getMinAmount() <= investmentmentDto.getAmount().doubleValue())) {
                 log.error("::: Invalid Investment Amount, please try again later......");
                 return false;
             }
-
             log.info("::: Satisfied requestBody: [{}] :::", investmentmentDto);
             return true;
 
