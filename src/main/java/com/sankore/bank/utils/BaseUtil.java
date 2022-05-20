@@ -190,16 +190,6 @@ public class BaseUtil {
 
     }
 
-    private BigDecimal amount;
-    private String iban;
-    private String firName;
-    private String lastName;
-    private String middleName;
-    private String category;
-    private String tranxRef;
-    private String startDate;
-    private String endDate;
-
     public static boolean isRequestSatisfied(InvestmentmentDto investmentmentDto) {
         log.info("::: In Investment payload validation.....");
         try {

@@ -19,14 +19,13 @@ import lombok.Data;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Account {
 
+    private String status;
     private UUID id;
     private Double balance;
     private String iban;
     private Date createdAt;
     private Date updatedAt;
-    private Set<TransactionModel> transactionHistories;
     private UserModel userModel;
     private String currency;
-    private String status;
 
 }

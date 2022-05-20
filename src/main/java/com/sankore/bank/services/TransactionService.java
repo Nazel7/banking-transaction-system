@@ -32,7 +32,6 @@ import org.springframework.stereotype.Service;
 
 import javax.security.auth.login.AccountNotFoundException;
 import javax.servlet.http.HttpServletRequest;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -480,8 +479,9 @@ public class TransactionService {
 
             if (investedAmountModel == null) {
                 log.error("::: Unable to process Investment. Please try again later");
+                throw new IllegalArgumentException("Error occur while try to invest");
+
             }
-            assert investedAmountModel != null;
             InvestmentModel investedModel = mInvestmentRepo.save(investedAmountModel);
             log.info("::: Investemnt is successful with payload: [{}]", investedModel);
 
