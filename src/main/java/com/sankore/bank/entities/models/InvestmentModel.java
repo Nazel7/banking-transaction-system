@@ -8,6 +8,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.Date;
 import java.util.Objects;
 
@@ -61,7 +62,7 @@ public class InvestmentModel {
 
     @Tolerate
     public InvestmentModel() {
-
+        this.investedAmount = new BigDecimal("0.00");
     }
 
     public InvestmentModel(BigDecimal investedAmount, BigDecimal accruedBalance,
@@ -78,7 +79,10 @@ public class InvestmentModel {
         if (!investmentRefNo.equals(this.investmentRefNo)) {
             throw new RuntimeException("Error accessing investment, Iban is not owned");
         }
-        this.investedAmount = investedAmount.add(investemntAmount);
+        if (this.investedAmount == null) {
+            this.investedAmount = new BigDecimal("0.00");
+        }
+        this.investedAmount = this.investedAmount.add(investemntAmount, new MathContext(4));
         this.plan = plan;
 
         return this;
@@ -88,7 +92,6 @@ public class InvestmentModel {
         if (!investmentRefNo.equals(this.investmentRefNo)) {
             throw new RuntimeException("Error accessing investment, Iban is not owned");
         }
-
         this.investedAmount = investedAmount.add(topUpAmount);
 
         return this;

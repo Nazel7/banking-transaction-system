@@ -87,12 +87,14 @@ public class AccountModel {
         this.currency = currency;
         this.status = status;
         this.accountType = accountType;
-        this.balance = new BigDecimal(0.00);
+        this.balance = new BigDecimal("0.00");
     }
 
     public AccountModel deposit(BigDecimal amount) {
 
-        System.out.println("BBB " + this.balance);
+        if (this.balance == null) {
+            this.balance = new BigDecimal("0.00");
+        }
        this.balance = this.balance.add(amount, new MathContext(4));
 
         return this;

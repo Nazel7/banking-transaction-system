@@ -522,10 +522,9 @@ public class TransactionService {
             throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
         }
 
-
     }
-    // TODO: UPDATE FUND_ACCOUNT  AND TRANSFER_FUND SERVICE
-    // TODO: DIRECT_DEBIT
-    // TODO: INVESTMENT ACCOUNT
+
+    //TODO: TopUp OPEN Investment
+    //TODO: Withdraw ACCRUED_INTEREST on Investment
 
 }
