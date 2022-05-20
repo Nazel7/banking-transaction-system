@@ -7,4 +7,5 @@ public enum TranxStatus {
     PENDING,
     OPEN,
     CLOSE;
+
 }

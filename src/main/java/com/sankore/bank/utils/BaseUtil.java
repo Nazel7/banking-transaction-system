@@ -10,7 +10,6 @@ import com.sankore.bank.enums.Currency;
 import com.sankore.bank.enums.InvestmentPlan;
 import lombok.extern.slf4j.Slf4j;
 
-import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.util.Objects;
 
@@ -205,7 +204,7 @@ public class BaseUtil {
             Objects.requireNonNull(investmentmentDto.getCurrency());
             Objects.requireNonNull(investmentmentDto.getStartDate());
             Objects.requireNonNull(investmentmentDto.getEndDate());
-            Objects.requireNonNull(investmentmentDto.getFirName());
+            Objects.requireNonNull(investmentmentDto.getFirstName());
             Objects.requireNonNull(investmentmentDto.getLastName());
             InvestmentPlan investmentPlan = InvestmentPlan.getInvestmentPlan(investmentmentDto.getPlan());
             Currency currency = Currency.getInvestmentPlan(investmentmentDto.getCurrency());

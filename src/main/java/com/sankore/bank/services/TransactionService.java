@@ -475,7 +475,15 @@ public class TransactionService {
             }
 
             final InvestmentModel investmentModel = InvestmentMapper.mapDtoToModel(dto);
-            final InvestmentModel investedAmountModel = investmentModel.invest(dto.getAmount(), dto.getPlan(), dto.getTranxRef());
+            final InvestmentModel invExistOnPending =
+                    mInvestmentRepo.getInvestmentModelByStatusAndPlan(TranxStatus.PENDING.name(), dto.getPlan());
+            if (invExistOnPending != null) {
+                log.error(":::Investment exist but not yet active");
+                throw new IllegalArgumentException("Investment of type exist but not yet active");
+            }
+
+            final InvestmentModel investedAmountModel = investmentModel.invest(dto.getAmount(), dto.getPlan(),
+                    dto.getTranxRef());
 
             if (investedAmountModel == null) {
                 log.error("::: Unable to process Investment. Please try again later");

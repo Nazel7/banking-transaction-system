@@ -9,7 +9,7 @@ public class InvestmentmentDto {
 
     private BigDecimal amount;
     private String iban;
-    private String firName;
+    private String firstName;
     private String lastName;
     private String middleName;
     private String bankCode;

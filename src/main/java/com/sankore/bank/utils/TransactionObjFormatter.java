@@ -14,7 +14,7 @@ public class TransactionObjFormatter {
     // For yyyy-MM-dd
     public static final String DATE_MATCHER = "^\\d{4}\\-(0[1-9]|1[012])\\-(0[1-9]|[12][0-9]|3[01])$";
     public static final String DATE_MATCHER_TIME = "^([0-9]{4})-([0-1][0-9])-([0-3][0-9]):([0-1][0-9]|[2][0-3]):([0-5][0-9]):([0-5][0-9])$";
-    public static final String DATE_FORMAT = "yyyy-MM-dd:HH:mm:ss.SSS";
+    public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
     public static final String YEAR_MONTH_FORMAT = "yyyy-MM";
     public static final String NGN_PHONE_NUM = "(?:(?:(?:\\+?234(?:\\h1)?|01)\\h*)?(?:\\(\\d{3}\\)|\\d{3})|\\d{4})(?:\\W*\\d{3})?\\W*\\d{4}(?!\\d)";
     public static final String EMAIL_FORMAT = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
