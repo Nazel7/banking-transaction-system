@@ -214,6 +214,8 @@ public class TransactionService {
             }
 
             AccountModel topedAccount = creditAccount.deposit(topupDto.getAmount());
+            topedAccount.setIsLiquidityApproval(false);
+            topedAccount.setIsLiquidated(false);
             mAccountRepo.save(topedAccount);
 
             transactionModel.setStatus(TranxStatus.SUCCESSFUL.name());
@@ -392,14 +394,20 @@ public class TransactionService {
                 throw  new IllegalAccessException("Account broken, Invalid access");
             }
 
-            final AccountModel debitedAccount = accountModel.withdraw(accountModel.getBalance());
+            final AccountModel debitedAccount = accountModel.liquidate(accountModel.getBalance());
 
             if (debitedAccount == null) {
                 log.error("::: AccountLiquidation withdrawal failed, insufficient balance.");
                 throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
             }
+            if (!liquidateDto.getIsLiquidate() || !liquidateDto.getIsLiquidityApproval()) {
+                log.error("::: Liquidity Request Error, Liquidation must be approved.");
+                throw new IllegalArgumentException("Liquidity Request Error, Liquidation must be approved." +
+                        " Date: " + new Date());
+            }
 
             debitedAccount.setIsLiquidated(true);
+            debitedAccount.setIsLiquidityApproval(liquidateDto.getIsLiquidityApproval());
             AccountModel debitedAccountSaved = mAccountRepo.save(debitedAccount);
             log.info("::: Account debit updated successfully with payload`; [{}]", debitedAccountSaved);
 
@@ -416,7 +424,7 @@ public class TransactionService {
             notificationLog.setData(data);
             notificationLog.setInitiator(debitedAccountSaved.getUserModel().getFirstName().concat(" ")
                     .concat(debitedAccountSaved.getUserModel().getLastName()));
-            notificationLog.setEventType(TransType.WITHDRAWAL.name());
+            notificationLog.setEventType(TransType.LIQUIDATE.name());
             notificationLog.setChannelCode(ChannelConsts.VENDOR_CHANNEL);
             notificationLog.setTranxDate(new Date());
             notificationLog.setTranxRef(liquidateDto.getTranxRef());

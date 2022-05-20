@@ -48,6 +48,7 @@ public class AccountModel {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
+    private BigDecimal OVER_DRAFT = new BigDecimal(100);
     @Setter(AccessLevel.NONE)
     private BigDecimal balance;
 
@@ -62,6 +63,8 @@ public class AccountModel {
     private String accountType;
 
     private Boolean isLiquidated;
+
+    private Boolean isLiquidityApproval;
 
     @CreationTimestamp
     private Date createdAt;
@@ -103,6 +106,17 @@ public class AccountModel {
     }
 
     public AccountModel withdraw(BigDecimal amount)
+            throws AccountException {
+
+        if (balance.add(OVER_DRAFT).compareTo(amount) >= 0) {
+            this.balance = this.balance.subtract(amount);
+        } else {
+            throw new AccountException("insufficient account balance!");
+        }
+        return this;
+    }
+
+    public AccountModel liquidate(BigDecimal amount)
             throws AccountException {
 
         if (balance.compareTo(amount) >= 0) {
