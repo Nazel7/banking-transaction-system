@@ -5,6 +5,7 @@ spring:
   application:
     version: @project.version@
     description: @project.description@
+    bank-code: ${BANK_CODE}
   mvc:
     servlet:
       path: /apis/sankore-bank

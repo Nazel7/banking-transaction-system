@@ -51,6 +51,8 @@ public class AccountModel {
     @Setter(AccessLevel.NONE)
     private BigDecimal balance;
 
+    private String bankCode;
+
     @Setter(AccessLevel.NONE)
     @Column(name = "account_iban")
     private String iban;

@@ -34,6 +34,8 @@ public class InvestmentMapper {
                 .middleName(investmentmentDto.getMiddleName())
                 .investmentRefNo(investmentmentDto.getTranxRef())
                 .accruedBalance(investmentmentDto.getAmount())
+                .bankCode(investmentmentDto.getBankCode())
+                .intRateYear(investmentPlan.getIntRateMonth() * 12)
                 .startDate(startDateInv)
                 .endDate(endDateInv)
                 .build();

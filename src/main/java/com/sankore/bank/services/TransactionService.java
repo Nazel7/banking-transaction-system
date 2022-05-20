@@ -469,7 +469,7 @@ public class TransactionService {
                 throw new IllegalAccessException("Account broken, UnAuthorized account access");
             }
             accountModel = accountModel.withdraw(dto.getAmount());
-            if (accountModel ==  null) {
+            if (accountModel ==  null || !dto.getBankCode().equals(accountModel.getBankCode())) {
                 log.error("::: Insufficient Balance for Investment");
                 throw new IllegalArgumentException("Insufficient Balance for Investment");
             }
@@ -490,6 +490,7 @@ public class TransactionService {
                 throw new IllegalArgumentException("Error occur while try to invest");
 
             }
+            investedAmountModel.setUserModelInv(accountModel.getUserModel());
             InvestmentModel investedModel = mInvestmentRepo.save(investedAmountModel);
             log.info("::: Investemnt is successful with payload: [{}]", investedModel);
 

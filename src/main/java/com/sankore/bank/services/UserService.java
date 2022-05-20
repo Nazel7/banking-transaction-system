@@ -15,6 +15,7 @@ import com.sankore.bank.dtos.request.UserInfoDto;
 import com.sankore.bank.dtos.response.UserNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -31,6 +32,9 @@ public class UserService {
     private final AccountRepo mAccountRepo;
     private final SecureUserRepo mSecureUserRepo;
 
+    @Value("${spring.application.bank-code}")
+    private String bankCode;
+
     public User registerUser(final SignUpDto signUpDto) throws UserNotFoundException {
         log.info("::: In registerUser.....");
 
@@ -44,6 +48,7 @@ public class UserService {
 
         AccountModel accountModel = BaseUtil.generateAccountNumber(userModel, signUpDto.getAccountType());
         accountModel.setUserModel(userModel);
+        accountModel.setBankCode(bankCode);
         UserModel userModelSaved = mUserRepo.save(userModel);
         log.info("::: New user with id: [{}] saved to DB :::", userModelSaved.getId());
 
