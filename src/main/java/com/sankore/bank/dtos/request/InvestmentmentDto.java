@@ -3,7 +3,6 @@ package com.sankore.bank.dtos.request;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.util.Date;
 
 @Data
 public class InvestmentmentDto {
@@ -17,6 +16,6 @@ public class InvestmentmentDto {
     private String currency;
     private String plan;
     private String tranxRef;
-    private Date startDate;
-    private Date endDate;
+    private String startDate;
+    private String endDate;
 }
