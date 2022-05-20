@@ -7,6 +7,7 @@ spring:
     description: @project.description@
     bank-code: ${BANK_CODE}
     investment-scheduler: ${INVESTMENT_SCHEDULER}
+    investment-activate-scheduler: ${INVESTMENT_ACTIVATION_SCHEDULER}
   mvc:
     servlet:
       path: /apis/sankore-bank

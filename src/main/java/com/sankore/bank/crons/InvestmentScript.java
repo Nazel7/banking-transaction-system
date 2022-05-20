@@ -27,7 +27,7 @@ public class InvestmentScript implements SchdeduleJob {
 
     private final InvestmentRepo investmentRepo;
 
-    @Value("page.custom-size")
+    @Value("${page.custom-size}")
     private int customSize;
 
     @Scheduled(cron = "${spring.application.investment-scheduler}")
