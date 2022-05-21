@@ -61,28 +61,30 @@ public class InvestmentScript implements SchdeduleJob {
 
                 for (InvestmentModel investmentModel : investmentModels.getContent()) {
 
-                    // Calculate Daily Interest
-                    final LocalDate currentDate = LocalDate.now();
-                    long daysInMonth = currentDate.lengthOfMonth();
-                    MathContext context = new MathContext(4);
-                    InvestmentPlan plan = InvestmentPlan.getInvestmentPlan(investmentModel.getPlan());
-                    double intrRatio = plan.getIntRateMonth() / 100;
-                    final BigDecimal intrAmountForPlanRatio = new BigDecimal(intrRatio, context);
-                    final BigDecimal montlyIntrForPlan =
-                            intrAmountForPlanRatio.multiply(investmentModel.getInvestedAmount());
+                    if (investmentModel.getEndDate().getTime() > (System.currentTimeMillis())) {
+                        // Calculate Daily Interest
+                        final LocalDate currentDate = LocalDate.now();
+                        long daysInMonth = currentDate.lengthOfMonth();
+                        MathContext context = new MathContext(4);
+                        InvestmentPlan plan = InvestmentPlan.getInvestmentPlan(investmentModel.getPlan());
+                        double intrRatio = plan.getIntRateMonth() / 100;
+                        final BigDecimal intrAmountPlanRatio = new BigDecimal(intrRatio, context);
+                        final BigDecimal montlyIntrForPlan =
+                                intrAmountPlanRatio.multiply(investmentModel.getInvestedAmount());
 
-                    // Get DailyInterest Amount
-                    final BigDecimal dailyInterest =
-                            montlyIntrForPlan.divide(new BigDecimal(daysInMonth), context);
-                    InvestmentModel accruedIntModel = investmentModel.doAccruedInterest(dailyInterest);
+                        // Get DailyInterest Amount
+                        final BigDecimal dailyInterest =
+                                montlyIntrForPlan.divide(new BigDecimal(daysInMonth), context);
+                        InvestmentModel accruedIntModel = investmentModel.doAccruedInterest(dailyInterest);
 
-                    if (accruedIntModel == null) {
-                        log.info("Daily Profit Accrued error...");
-                        throw new RuntimeException("Daily Profit Accrued error. Date: " + new Date());
+                        if (accruedIntModel == null) {
+                            log.info("Daily Profit Accrued error...");
+                            throw new RuntimeException("Daily Profit Accrued error. Date: " + new Date());
+                        }
+                        accruedIntModel = investmentRepo.save(accruedIntModel);
+
+                        log.info("::: Daily accrued interest is successful with payload: [{}]", accruedIntModel);
                     }
-                    accruedIntModel = investmentRepo.save(accruedIntModel);
-
-                    log.info("::: Daily accrued interest is successful with payload: [{}]", accruedIntModel);
 
                 }
             }

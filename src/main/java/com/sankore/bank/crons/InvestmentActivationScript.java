@@ -49,7 +49,7 @@ public class InvestmentActivationScript implements SchdeduleJob {
                 investmentModels =
                         investmentRepo.findByStatus(TranxStatus.PENDING.name(), pageable);
                 for (InvestmentModel investmentModel : investmentModels.getContent()) {
-                    log.info("::: About to Activate Investment Account");
+                    log.info("::: About to ACTIVATE Investment Account");
                     if (investmentModel.getStartDate().getTime() <= System.currentTimeMillis()) {
                         investmentModel.setStatus(TranxStatus.OPEN.name());
                         investmentModel = investmentRepo.save(investmentModel);
@@ -65,8 +65,64 @@ public class InvestmentActivationScript implements SchdeduleJob {
                         notificationLog.setData(data);
                         notificationLog.setInitiator(investmentModel.getFirName().concat(" ")
                                 .concat(investmentModel.getLastName()));
-                        notificationLog.setEventType(TransType.WITHDRAWAL.name());
-                        notificationLog.setChannelCode(ChannelConsts.VENDOR_CHANNEL);
+                        notificationLog.setEventType(TransType.INVESTMENT.name());
+                        notificationLog.setChannelCode(investmentModel.getBankCode());
+                        notificationLog.setTranxDate(investmentModel.getCreatedAt());
+                        notificationLog.setTranxRef(investmentModel.getInvestmentRefNo());
+
+                        final NotificationLogEvent
+                                notificationLogEvent = new NotificationLogEvent(this, notificationLog);
+                        mEventPublisher.publishEvent(notificationLogEvent);
+                        log.info("::: notification sent successfully for Open investment, data: [{}]",
+                                notificationLogEvent.getNotificationLog());
+
+                        log.info("::: Investment Status is Opened successfully with payload: [{}]", investmentModel);
+                    }
+
+                }
+            }
+        }catch (Exception ex) {
+            ex.printStackTrace();
+            log.error("Activation not successful.");
+        }
+    }
+
+    public void closeInvestment() {
+
+        try {
+            Pageable pageable = PageRequest.of(0, customSize);
+            Page<InvestmentModel> investmentModels =
+                    investmentRepo.findByStatus(TranxStatus.PENDING.name(), pageable);
+
+            if (investmentModels.getContent().isEmpty()) {
+                return;
+            }
+
+            log.info("::: About to process open investment from DB...");
+            for (int i = 0; i <= investmentModels.getTotalPages(); i++) {
+
+                pageable = PageRequest.of(i, customSize);
+                investmentModels =
+                        investmentRepo.findByStatus(TranxStatus.PENDING.name(), pageable);
+                for (InvestmentModel investmentModel : investmentModels.getContent()) {
+                    log.info("::: About to DEACTIVATE Investment Account");
+                    if (investmentModel.getEndDate().getTime() > System.currentTimeMillis()) {
+                        investmentModel.setStatus(TranxStatus.OPEN.name());
+                        investmentModel = investmentRepo.save(investmentModel);
+                        NotificationLog notificationLog = new NotificationLog();
+                        DataInfo data = new DataInfo();
+                        String notificationMessage =
+                                String.format("Your Investment from your account: [%s] is successful with Amount: [%s%s] only ",
+                                        investmentModel.getIban(),
+                                        investmentModel.getCurrency(),
+                                        investmentModel.getInvestedAmount());
+
+                        data.setMessage(notificationMessage);
+                        notificationLog.setData(data);
+                        notificationLog.setInitiator(investmentModel.getFirName().concat(" ")
+                                .concat(investmentModel.getLastName()));
+                        notificationLog.setEventType(TransType.INVESTMENT.name());
+                        notificationLog.setChannelCode(investmentModel.getBankCode());
                         notificationLog.setTranxDate(investmentModel.getCreatedAt());
                         notificationLog.setTranxRef(investmentModel.getInvestmentRefNo());
 

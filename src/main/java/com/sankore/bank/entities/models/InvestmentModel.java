@@ -114,7 +114,7 @@ public class InvestmentModel {
         }
     }
 
-    // TODO: extend Investemt CLOSE date to continue with the currently running investment.
+    //TODO: extend Investemt CLOSE date to continue with the currently running investment.
     public InvestmentModel extendInvestment(String extentionDate) throws ParseException {
         Date date = TransactionObjFormatter.getDate(extentionDate);
         if (this.getEndDate().getTime() < date.getTime()) {
@@ -124,10 +124,6 @@ public class InvestmentModel {
         else {
             throw new RuntimeException("Not a valid extension Date for investment");
         }
-
-
-
-
     }
 
     public InvestmentModel doAccruedInterest(BigDecimal dailyAccruedAmount) throws ParseException {
