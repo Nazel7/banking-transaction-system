@@ -1,38 +1,22 @@
 package com.sankore.bank.entities.models;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Tolerate;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import javax.persistence.*;
+import javax.security.auth.login.AccountException;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
-
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
-import javax.security.auth.login.AccountException;
-
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-import lombok.experimental.Tolerate;
 
 @Entity
 @Table(name = "bank_account", indexes = {
@@ -127,6 +111,7 @@ public class AccountModel {
         return this;
     }
 
+    //TODO: print Account statement
     public String printStatement() throws JsonProcessingException {
 
         ObjectMapper mapper = new ObjectMapper();

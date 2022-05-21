@@ -194,6 +194,7 @@ public class BaseUtil {
 
     public static boolean isRequestSatisfied(InvestmentmentDto investmentmentDto) {
         log.info("::: In Investment payload validation.....");
+
         try {
 
             Objects.requireNonNull(investmentmentDto.getIban());
