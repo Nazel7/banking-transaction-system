@@ -68,7 +68,7 @@ public class TransactionController {
 //    @Async
     @CrossOrigin
     @PreAuthorize("hasRole('CUSTOMER')")
-    @ApiOperation(value = "::: fundAccount :::", notes = "Api for quick account topUp")
+    @ApiOperation(value = "::: fundAccount :::", notes = "Api for quick account withrawal")
     @PutMapping("/withdraw")
     public CompletableFuture<ResponseEntity<Account>> withdrawAmount(@RequestBody WithrawalDto withrawalDto, HttpServletRequest request)
             throws TransferNotValidException {
@@ -81,7 +81,7 @@ public class TransactionController {
 //    @Async
     @CrossOrigin
     @PreAuthorize("hasRole('CUSTOMER')")
-    @ApiOperation(value = "::: fundAccount :::", notes = "Api for quick account topUp")
+    @ApiOperation(value = "::: fundAccount :::", notes = "Api for quick account liquidity")
     @PutMapping("/liquidate")
     public CompletableFuture<ResponseEntity<Account>> liquidateAccount(@RequestBody LiquidateDto liquidateDto, HttpServletRequest request)
             throws TransferNotValidException {
@@ -94,7 +94,7 @@ public class TransactionController {
 //    @Async
     @CrossOrigin
     @PreAuthorize("hasRole('CUSTOMER')")
-    @ApiOperation(value = "::: fundAccount :::", notes = "Api for quick account topUp")
+    @ApiOperation(value = "::: fundAccount :::", notes = "Api for quick account Investment")
     @PostMapping("/invest")
     public CompletableFuture<ResponseEntity<Investment>> InvestAmount(@RequestBody InvestmentmentDto investmentmentDto, HttpServletRequest request)
             throws TransferNotValidException {
