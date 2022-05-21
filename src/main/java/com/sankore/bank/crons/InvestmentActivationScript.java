@@ -1,6 +1,5 @@
 package com.sankore.bank.crons;
 
-import com.sankore.bank.contants.ChannelConsts;
 import com.sankore.bank.entities.models.InvestmentModel;
 import com.sankore.bank.enums.TransType;
 import com.sankore.bank.enums.TranxStatus;
@@ -112,7 +111,7 @@ public class InvestmentActivationScript implements SchdeduleJob {
                 for (InvestmentModel investmentModel : investmentModels.getContent()) {
                     log.info("::: About to DEACTIVATE Investment Account");
                     if (investmentModel.getEndDate().getTime() > System.currentTimeMillis()) {
-                        investmentModel.setStatus(TranxStatus.OPEN.name());
+                        investmentModel.setStatus(TranxStatus.CLOSE.name());
                         investmentModel = investmentRepo.save(investmentModel);
                         NotificationLog notificationLog = new NotificationLog();
                         DataInfo data = new DataInfo();
