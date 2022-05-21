@@ -5,17 +5,28 @@ import com.sankore.bank.dtos.response.Account;
 import com.sankore.bank.dtos.response.Investment;
 import com.sankore.bank.dtos.response.Transaction;
 import com.sankore.bank.dtos.response.TransferNotValidException;
+import com.sankore.bank.entities.models.InvestmentModel;
 import com.sankore.bank.services.TransactionService;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import org.jooq.DSLContext;
+import org.jooq.Record;
+import org.jooq.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.sql.ResultSet;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
@@ -24,6 +35,7 @@ import java.util.concurrent.CompletableFuture;
 public class TransactionController {
 
     private final TransactionService mTransactionService;
+    private final DSLContext dslContext;
 
     @Async
     @CrossOrigin
@@ -88,6 +100,18 @@ public class TransactionController {
         final Investment investment = mTransactionService.doInvestment(investmentmentDto, request);
 
         return CompletableFuture.completedFuture(new ResponseEntity<>(investment, HttpStatus.CREATED));
+    }
+
+    // Test
+    @Async
+    @CrossOrigin
+//    @PreAuthorize("hasRole('CUSTOMER')")
+    @ApiOperation(value = "::: fundAccount :::", notes = "Api for quick account topUp")
+    @GetMapping("/jooqq")
+    public CompletableFuture<ResponseEntity<?>> investmentList() {
+
+        return CompletableFuture.completedFuture(new ResponseEntity<>("HELLO", HttpStatus.CREATED));
+
     }
 
 

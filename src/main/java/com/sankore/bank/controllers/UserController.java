@@ -56,4 +56,5 @@ public class UserController {
 
         return CompletableFuture.completedFuture(new ResponseEntity<>(user, HttpStatus.CREATED));
     }
+
 }

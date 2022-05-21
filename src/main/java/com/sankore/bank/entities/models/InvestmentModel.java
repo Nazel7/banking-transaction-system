@@ -2,7 +2,6 @@ package com.sankore.bank.entities.models;
 
 import com.sankore.bank.utils.TransactionObjFormatter;
 import lombok.*;
-import lombok.experimental.Tolerate;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -62,11 +61,6 @@ public class InvestmentModel {
     @UpdateTimestamp
     private Date updatedAt;
 
-    @Tolerate
-    public InvestmentModel() {
-        this.investedAmount = new BigDecimal("0.00");
-    }
-
     public InvestmentModel(BigDecimal investedAmount, BigDecimal accruedBalance,
                            Double intRateMonth, Double intRateYear) {
 
@@ -74,6 +68,10 @@ public class InvestmentModel {
         this.investedAmount = investedAmount;
         this.intRateMonth = intRateMonth;
         this.intRateYear = intRateYear;
+
+    }
+
+    public InvestmentModel() {
 
     }
 
@@ -148,10 +146,5 @@ public class InvestmentModel {
         return Objects.equals(iban, investmentModel.iban);
     }
 
-    @Override
-    public int hashCode() {
-
-        return Objects.hash(investedAmount, iban, createdAt);
-    }
 
 }
