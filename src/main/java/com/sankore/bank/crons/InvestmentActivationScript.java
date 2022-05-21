@@ -1,12 +1,18 @@
 package com.sankore.bank.crons;
 
+import com.sankore.bank.contants.ChannelConsts;
 import com.sankore.bank.entities.models.InvestmentModel;
+import com.sankore.bank.enums.TransType;
 import com.sankore.bank.enums.TranxStatus;
+import com.sankore.bank.event.notifcation.DataInfo;
+import com.sankore.bank.event.notifcation.NotificationLog;
+import com.sankore.bank.event.notifcation.NotificationLogEvent;
 import com.sankore.bank.repositories.InvestmentRepo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +25,7 @@ import org.springframework.stereotype.Component;
 public class InvestmentActivationScript implements SchdeduleJob {
 
     private final InvestmentRepo investmentRepo;
+    private final ApplicationEventPublisher mEventPublisher;
     @Value("${page.custom-size}")
     private int customSize;
 
@@ -46,6 +53,28 @@ public class InvestmentActivationScript implements SchdeduleJob {
                     if (investmentModel.getStartDate().getTime() <= System.currentTimeMillis()) {
                         investmentModel.setStatus(TranxStatus.OPEN.name());
                         investmentModel = investmentRepo.save(investmentModel);
+                        NotificationLog notificationLog = new NotificationLog();
+                        DataInfo data = new DataInfo();
+                        String notificationMessage =
+                                String.format("Your Investment from your account: [%s] is successful with Amount: [%s%s] only ",
+                                        investmentModel.getIban(),
+                                        investmentModel.getCurrency(),
+                                        investmentModel.getInvestedAmount());
+
+                        data.setMessage(notificationMessage);
+                        notificationLog.setData(data);
+                        notificationLog.setInitiator(investmentModel.getFirName().concat(" ")
+                                .concat(investmentModel.getLastName()));
+                        notificationLog.setEventType(TransType.WITHDRAWAL.name());
+                        notificationLog.setChannelCode(ChannelConsts.VENDOR_CHANNEL);
+                        notificationLog.setTranxDate(investmentModel.getCreatedAt());
+                        notificationLog.setTranxRef(investmentModel.getInvestmentRefNo());
+
+                        final NotificationLogEvent
+                                notificationLogEvent = new NotificationLogEvent(this, notificationLog);
+                        mEventPublisher.publishEvent(notificationLogEvent);
+                        log.info("::: notification sent successfully for Open investment, data: [{}]",
+                                notificationLogEvent.getNotificationLog());
 
                         log.info("::: Investment Status is Opened successfully with payload: [{}]", investmentModel);
                     }

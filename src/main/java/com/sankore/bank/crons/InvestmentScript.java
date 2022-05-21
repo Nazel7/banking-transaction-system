@@ -65,7 +65,9 @@ public class InvestmentScript implements SchdeduleJob {
                     final LocalDate currentDate = LocalDate.now();
                     long daysInMonth = currentDate.lengthOfMonth();
                     MathContext context = new MathContext(4);
-                    final BigDecimal intrAmountForPlanRatio = new BigDecimal("0.01", context);
+                    InvestmentPlan plan = InvestmentPlan.getInvestmentPlan(investmentModel.getPlan());
+                    double intrRatio = plan.getIntRateMonth() / 100;
+                    final BigDecimal intrAmountForPlanRatio = new BigDecimal(intrRatio, context);
                     final BigDecimal montlyIntrForPlan =
                             intrAmountForPlanRatio.multiply(investmentModel.getInvestedAmount());
 

@@ -43,6 +43,7 @@ public class InvestmentModel {
     private Double intRateMonth;
     private Double intRateYear;
     private String bvn;
+    private String currency;
     private String firName;
     private String lastName;
     private String middleName;

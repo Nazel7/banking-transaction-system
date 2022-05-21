@@ -37,6 +37,7 @@ public class InvestmentMapper {
                 .bankCode(investmentmentDto.getBankCode())
                 .intRateYear(investmentPlan.getIntRateMonth() * 12)
                 .startDate(startDateInv)
+                .currency(investmentmentDto.getCurrency())
                 .endDate(endDateInv)
                 .build();
 
