@@ -33,6 +33,11 @@ public class InvestmentActivationScript implements SchdeduleJob {
     @Override
     public void run() {
 
+        closeInvestment();
+        openInvestment();
+    }
+
+    private void openInvestment() {
         try {
             Pageable pageable = PageRequest.of(0, customSize);
             Page<InvestmentModel> investmentModels =
@@ -92,7 +97,7 @@ public class InvestmentActivationScript implements SchdeduleJob {
         try {
             Pageable pageable = PageRequest.of(0, customSize);
             Page<InvestmentModel> investmentModels =
-                    investmentRepo.findByStatus(TranxStatus.PENDING.name(), pageable);
+                    investmentRepo.findAll(pageable);
 
             if (investmentModels.getContent().isEmpty()) {
                 return;
@@ -103,7 +108,7 @@ public class InvestmentActivationScript implements SchdeduleJob {
 
                 pageable = PageRequest.of(i, customSize);
                 investmentModels =
-                        investmentRepo.findByStatus(TranxStatus.PENDING.name(), pageable);
+                        investmentRepo.findAll(pageable);
                 for (InvestmentModel investmentModel : investmentModels.getContent()) {
                     log.info("::: About to DEACTIVATE Investment Account");
                     if (investmentModel.getEndDate().getTime() > System.currentTimeMillis()) {
