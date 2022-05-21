@@ -173,7 +173,7 @@ public class TransactionService {
 
             return TransactionMapper.mapToDomain(savedTransaction);
 
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
             throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
         }
@@ -181,7 +181,7 @@ public class TransactionService {
     }
 
 
-    public Account doFundAccount(TopupDto topupDto, HttpServletRequest request) throws  TransferNotValidException {
+    public Account doFundAccount(TopupDto topupDto, HttpServletRequest request) throws TransferNotValidException {
         log.info("::: In fundAccount.....");
 
         try {
@@ -220,7 +220,7 @@ public class TransactionService {
 
             transactionModel.setStatus(TranxStatus.SUCCESSFUL.name());
             TransactionModel savedLogModel = mTransactionRepo.save(transactionModel);
-            log.info("::: FundAccount LogModel audited successfully with paylaod: [{}]",savedLogModel);
+            log.info("::: FundAccount LogModel audited successfully with paylaod: [{}]", savedLogModel);
 
             String notificationMessage =
                     String.format("Your account %s has been credit with sum of [%s%s] only ",
@@ -244,7 +244,7 @@ public class TransactionService {
             return AccountMapper.mapToDomain(topedAccount, TranxStatus.SUCCESSFUL.name());
 
 
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
             throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
         }
@@ -304,7 +304,7 @@ public class TransactionService {
             final TransactionModel transactionModel = TransactionMapper.mapToModel(withrawalDto, token);
             if (!userModel.getVerificationCode().equals(withrawalDto.getVerificationCode())) {
                 log.error("::: Account broken, Invalid access...");
-                throw  new IllegalAccessException("Account broken, Invalid access");
+                throw new IllegalAccessException("Account broken, Invalid access");
             }
 
             final AccountModel debitedAccount = accountModel.withdraw(withrawalDto.getAmount());
@@ -319,7 +319,7 @@ public class TransactionService {
 
             transactionModel.setStatus(TranxStatus.SUCCESSFUL.name());
             TransactionModel savedLogModel = mTransactionRepo.save(transactionModel);
-            log.info("::: FundWithdrawal LogModel audited successfully with paylaod: [{}]",savedLogModel);
+            log.info("::: FundWithdrawal LogModel audited successfully with paylaod: [{}]", savedLogModel);
 
             String notificationMessage =
                     String.format("Your account %s has been debited with sum of [%s%s] only ",
@@ -344,7 +344,7 @@ public class TransactionService {
             return AccountMapper.mapToDomain(debitedAccount, TranxStatus.SUCCESSFUL.name());
 
 
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
             throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
         }
@@ -391,7 +391,7 @@ public class TransactionService {
             final TransactionModel transactionModel = TransactionMapper.mapToModel(liquidateDto, token);
             if (!userModel.getVerificationCode().equals(liquidateDto.getVerificationCode())) {
                 log.error("::: Account broken, Invalid access...");
-                throw  new IllegalAccessException("Account broken, Invalid access");
+                throw new IllegalAccessException("Account broken, Invalid access");
             }
 
             final AccountModel debitedAccount = accountModel.liquidate(accountModel.getBalance());
@@ -413,7 +413,7 @@ public class TransactionService {
 
             transactionModel.setStatus(TranxStatus.SUCCESSFUL.name());
             TransactionModel savedLogModel = mTransactionRepo.save(transactionModel);
-            log.info("::: FundWithdrawal LogModel audited successfully with paylaod: [{}]",savedLogModel);
+            log.info("::: FundWithdrawal LogModel audited successfully with paylaod: [{}]", savedLogModel);
 
             String notificationMessage =
                     String.format("Your account %s has been liquidated with account total sum of [%s%s] only ",
@@ -438,7 +438,7 @@ public class TransactionService {
             return AccountMapper.mapToDomain(debitedAccount, TranxStatus.SUCCESSFUL.name());
 
 
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
             throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
         }
@@ -477,7 +477,7 @@ public class TransactionService {
                 throw new IllegalAccessException("Account broken, UnAuthorized account access");
             }
             accountModel = accountModel.withdraw(dto.getAmount());
-            if (accountModel ==  null || !dto.getBankCode().equals(accountModel.getBankCode())) {
+            if (accountModel == null || !dto.getBankCode().equals(accountModel.getBankCode())) {
                 log.error("::: Insufficient Balance for Investment");
                 throw new IllegalArgumentException("Insufficient Balance for Investment");
             }
@@ -526,7 +526,7 @@ public class TransactionService {
             log.info("::: Investment is successful....");
             return InvestmentMapper.mapModelToDto(investedModel);
 
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
             throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
         }
