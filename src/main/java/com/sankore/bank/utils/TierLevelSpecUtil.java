@@ -54,26 +54,13 @@ public class TierLevelSpecUtil {
             if (userModel.getVerifiedEmail() && userModel.getVerifiedBvn() ||
                     userModel.getVerifiedPhone() && userModel.getVerifiedBvn()) {
 
-                log.info("::: Account with Iban: [{}] is [{}] verified :::",
-                        userModel.getAccount().getIban(),
-                        TierLevelConstant.LEVEL_ONE);
-
                 return true;
             }
-
-            log.error("::: Account with Iban: [{}] is not [{}] verified",
-                    userModel.getAccount().getIban(),
-                    TierLevelConstant.LEVEL_ONE
-            );
 
             return false;
 
         } catch (NullPointerException ex) {
             ex.printStackTrace();
-            log.error("::: Account with Iban: [{}] is not [{}] verified",
-                    userModel.getAccount().getIban(),
-                    TierLevelConstant.LEVEL_ONE
-            );
 
             return false;
         }
@@ -84,26 +71,15 @@ public class TierLevelSpecUtil {
         try {
             if (userModel.getVerifiedEmail() && userModel.getVerifiedPhone() && userModel.getVerifiedBvn()) {
 
-                log.info("::: Account with Iban: [{}] is [{}] verified :::",
-                         userModel.getAccount().getIban(),
-                        TierLevelConstant.LEVEL_TWO);
 
                 return true;
             }
 
-            log.error("::: Account with Iban: [{}] is not [{}] verified",
-                      userModel.getAccount().getIban(),
-                    TierLevelConstant.LEVEL_TWO
-                     );
 
             return false;
 
         } catch (NullPointerException ex) {
             ex.printStackTrace();
-            log.error("::: Account with Iban: [{}] is not [{}] verified",
-                      userModel.getAccount().getIban(),
-                    TierLevelConstant.LEVEL_TWO
-                     );
 
             return false;
         }
@@ -114,27 +90,14 @@ public class TierLevelSpecUtil {
         try {
             if (isLevelTwoSatisfied(userModel) && userModel.getHomeAddress() != null && userModel.getVerifiedHomeAddress()) {
 
-                log.info("::: Account with Iban: [{}] is [{}] verified :::",
-                         userModel.getAccount().getIban(),
-                        TierLevelConstant.LEVEL_THREE);
-
                 return true;
 
             }
-
-            log.error("::: Account with Iban: [{}] is not [{}] verified",
-                      userModel.getAccount().getIban(),
-                    TierLevelConstant.LEVEL_THREE
-                     );
 
             return false;
 
         } catch (NullPointerException ex) {
             ex.printStackTrace();
-            log.error("::: Account with Iban: [{}] is not [{}] verified",
-                      userModel.getAccount().getIban(),
-                    TierLevelConstant.LEVEL_THREE
-                     );
 
             return false;
         }

@@ -124,6 +124,8 @@ public class UserMapper {
                 .id(customersRecord.getId())
                 .tierLevel(customersRecord.getTierLevel())
                 .address(customersRecord.getAddress())
+                .firstName(customersRecord.getFirstName())
+                .lastName(customersRecord.getLastName())
                 .build();
     }
 }

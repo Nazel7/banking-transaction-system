@@ -280,7 +280,6 @@ public class TransactionJOOQService {
                 throw new IllegalArgumentException("TopUp request error with payload");
             }
 
-//            AccountModel accountModel = mAccountRepo.findAccountModelByIban(withrawalDto.getIban());
             BankAccountRecord accountRecord = dslContext.fetchOne(BankAccount.BANK_ACCOUNT,
                     BankAccount.BANK_ACCOUNT.ACCOUNT_IBAN.eq(withrawalDto.getIban()));
 
@@ -294,7 +293,7 @@ public class TransactionJOOQService {
 
             log.info("::: About to validate Account owner.....");
             String userName = jwtUtil.extractUsername(token);
-//            UserModel userModel = mUserRepo.findUserModelByEmail(userName);
+            // Find by currenly loggedIn user
             CustomersRecord userModel = dslContext.fetchOne(Customers.CUSTOMERS, Customers.CUSTOMERS.EMAIL.eq(userName));
             if (userModel == null) {
                 log.error("::: Account broken, Invalid Account access");
@@ -329,12 +328,12 @@ public class TransactionJOOQService {
             }
 
             final AccountModel debitedAccount = accountModel.withdraw(withrawalDto.getAmount());
-            int updatedResponse = dslContext.update(BankAccount.BANK_ACCOUNT).set(BankAccount.BANK_ACCOUNT.BALANCE, debitedAccount.getBalance())
-                    .where(BankAccount.BANK_ACCOUNT.ID.eq(accountRecord.getId())).execute();
-            log.info("::: BalanceUpdateResponse: [{}]", updatedResponse);
+            int updatedResponse = dslContext.update(BankAccount.BANK_ACCOUNT)
+                    .set(BankAccount.BANK_ACCOUNT.BALANCE, debitedAccount.getBalance())
+                    .where(BankAccount.BANK_ACCOUNT.ID.eq(accountRecord.getId()))
+                    .execute();
 
-            AccountModel debitedAccountSaved = mAccountRepo.save(debitedAccount);
-            log.info("::: Account debit updated successfully with payload`; [{}]", debitedAccountSaved);
+            log.info("::: Account debit updated successfully with response: [{}]", updatedResponse);
 
             transactionModel.setStatus(TranxStatus.SUCCESSFUL.name());
             TransactionModel savedLogModel = mTransactionRepo.save(transactionModel);
@@ -347,8 +346,8 @@ public class TransactionJOOQService {
                             withrawalDto.getAmount());
             data.setMessage(notificationMessage);
             notificationLog.setData(data);
-            notificationLog.setInitiator(debitedAccountSaved.getUserModel().getFirstName().concat(" ")
-                    .concat(debitedAccountSaved.getUserModel().getLastName()));
+            notificationLog.setInitiator(debitedAccount.getUserModel().getFirstName().concat(" ")
+                    .concat(debitedAccount.getUserModel().getLastName()));
             notificationLog.setEventType(TransType.WITHDRAWAL.name());
             notificationLog.setChannelCode(ChannelConsts.VENDOR_CHANNEL);
             notificationLog.setTranxDate(new Date());
@@ -378,6 +377,9 @@ public class TransactionJOOQService {
             if (token.contains("Bearer")) {
                 token = token.split(" ")[1];
             }
+            log.info("::: About to validate Account owner.....");
+            String userName = jwtUtil.extractUsername(token);
+            System.out.println("UserName: " + userName);
 
             NotificationLog notificationLog = new NotificationLog();
             DataInfo data = new DataInfo();
@@ -387,16 +389,18 @@ public class TransactionJOOQService {
                 throw new IllegalArgumentException("TopUp request error with payload");
             }
 
-            AccountModel accountModel = mAccountRepo.findAccountModelByIban(liquidateDto.getIban());
+//            AccountModel accountModel = mAccountRepo.findAccountModelByIban(liquidateDto.getIban());
+            BankAccountRecord accountRecord = dslContext.fetchOne(BankAccount.BANK_ACCOUNT,
+                    BankAccount.BANK_ACCOUNT.ACCOUNT_IBAN.eq(liquidateDto.getIban()));
+            // Find by currenly loggedIn user
+            CustomersRecord customersRecord = dslContext.fetchOne(Customers.CUSTOMERS,
+                    Customers.CUSTOMERS.EMAIL.eq(userName));
 
-            log.info("::: About to validate Account owner.....");
-            String userName = jwtUtil.extractUsername(token);
-            System.out.println("UserName: " + userName);
-            UserModel userModel = mUserRepo.findUserModelByEmail(userName);
-            if (userModel == null) {
-                log.error("::: Account broken, Invalid Account access");
-                throw new IllegalAccessException("Account broken, Invalid Account access");
-            }
+            assert customersRecord != null;
+            UserModel userModelMinRecord = UserMapper.mapRecordToModel(customersRecord);
+
+            assert accountRecord != null;
+            AccountModel accountModel = AccountMapper.mapRecordToModel(accountRecord, userModelMinRecord);
 
             // Very if account is active not close or debit freeze
             boolean isAccountStatusVerified = BaseUtil.verifyAccount(accountModel);
@@ -408,7 +412,7 @@ public class TransactionJOOQService {
             }
 
             final TransactionModel transactionModel = TransactionMapper.mapToModel(liquidateDto, token);
-            if (!userModel.getVerificationCode().equals(liquidateDto.getVerificationCode())) {
+            if (!customersRecord.getVerificationCode().equals(liquidateDto.getVerificationCode())) {
                 log.error("::: Account broken, Invalid access...");
                 throw new IllegalAccessException("Account broken, Invalid access");
             }
