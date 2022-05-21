@@ -47,7 +47,7 @@ public class TransactionController {
     public CompletableFuture<ResponseEntity<Transaction>> transferFund(@RequestBody TransferDto transferDto, HttpServletRequest request)
             throws TransferNotValidException {
 
-        final Transaction transaction = mTransactionService.doFundTransfer(transferDto, request);
+        final Transaction transaction = transactionJOOQService.doFundTransfer(transferDto, request);
 
         return CompletableFuture.completedFuture(new ResponseEntity<>(transaction, HttpStatus.OK));
     }
@@ -60,7 +60,7 @@ public class TransactionController {
     public CompletableFuture<ResponseEntity<Account>> fundAccount(@RequestBody TopupDto topupDto, HttpServletRequest request)
             throws TransferNotValidException {
 
-        final Account account = mTransactionService.doFundAccount(topupDto, request);
+        final Account account = transactionJOOQService.doFundAccount(topupDto, request);
 
         return CompletableFuture.completedFuture(new ResponseEntity<>(account, HttpStatus.OK));
     }

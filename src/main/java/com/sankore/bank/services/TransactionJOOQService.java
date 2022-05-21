@@ -29,6 +29,7 @@ import com.sankore.bank.tables.Customers;
 import com.sankore.bank.tables.records.BankAccountRecord;
 import com.sankore.bank.tables.records.CustomersRecord;
 import com.sankore.bank.tables.records.InvestmentModelRecord;
+import com.sankore.bank.tables.records.TransactionsRecord;
 import com.sankore.bank.utils.BaseUtil;
 import com.sankore.bank.utils.TierLevelSpecUtil;
 import lombok.RequiredArgsConstructor;
@@ -83,34 +84,38 @@ public class TransactionJOOQService {
                 throw new TransferNotValidException("Invalid Transfer request, please try again later.");
             }
 
-            Optional<UserModel> userModel = mUserRepo.findById(transferDto.getUserId());
-//            final CustomersRecord userModel =
-//                    dslContext.fetchOne(Tables.CUSTOMERS, Tables.CUSTOMERS.ID.eq(transferDto.getUserId()));
-            final AccountModel debitAccount =
-                    mAccountRepo.findAccountModelByIban(transferDto.getDebitAccountNo());
+            // DebitAccount Processing
+            final CustomersRecord debitCustomersRecord =
+                    dslContext.fetchOne(Tables.CUSTOMERS, Tables.CUSTOMERS.ID.eq(transferDto.getUserId()));
 
-            if (userModel.isEmpty()) {
+            final BankAccountRecord debitAccountRecord = dslContext.fetchOne(Tables.BANK_ACCOUNT,
+                    Tables.BANK_ACCOUNT.ACCOUNT_IBAN.eq(transferDto.getDebitAccountNo()));
 
-                log.error("::: User not found with body");
-                throw new UserNotFoundException("User not found ");
-            }
+            assert debitCustomersRecord != null;
+            assert debitAccountRecord != null;
+            final AccountModel debitAccountModel = getAccountModel(debitAccountRecord);
+            if (!debitCustomersRecord.getId().equals(debitAccountRecord.getUserModelId())) {
 
-            if (!userModel.get().equals(debitAccount.getUserModel())) {
-
-                log.error("::: user account not valid, Account: [{}] :::", debitAccount);
+                log.error("::: user account not valid, Account: [{}] :::", debitAccountModel);
                 throw new AccountNotFoundException("User account not valid");
             }
 
-            final AccountModel creditAccount =
-                    mAccountRepo.findAccountModelByIban(transferDto.getBenefAccountNo());
+            // CreditAccount processing
+            final BankAccountRecord creditAccountRecord = dslContext.fetchOne(Tables.BANK_ACCOUNT,
+                    Tables.BANK_ACCOUNT.ACCOUNT_IBAN.eq(transferDto.getBenefAccountNo()));
 
-            final UserModel sender = debitAccount.getUserModel();
-            System.out.println("Sender " + sender);
-            final UserModel receiver = creditAccount.getUserModel();
+            assert creditAccountRecord != null;
+            final CustomersRecord creditCustomersRecord =
+                    dslContext.fetchOne(Tables.CUSTOMERS, Tables.CUSTOMERS.ID.eq(creditAccountRecord.getUserModelId()));
+
+            assert creditCustomersRecord != null;
+            final UserModel sender = UserMapper.mapRecordToModel(debitCustomersRecord);
+            final UserModel receiver = UserMapper.mapRecordToModel(creditCustomersRecord);
+            AccountModel creditAccountModel = getAccountModel(creditAccountRecord);
 
             // Very if account is active not close or debit freeze
             boolean isAccountStatusVerified =
-                    BaseUtil.verifyAccount(debitAccount, creditAccount);
+                    BaseUtil.verifyAccount(debitAccountModel, creditAccountModel);
             log.info("::: Account Status verified: [{}] :::", isAccountStatusVerified);
 
             // Check if user meet tierLevel specification
@@ -137,36 +142,45 @@ public class TransactionJOOQService {
                 throw new IllegalAccessException("Access denied for Invalid verificationCode");
             }
 
-            AccountModel debitedAccount =
-                    debitAccount.withdraw(transferDto.getAmount());
+            final AccountModel debitedAccountProcess = debitAccountModel.withdraw(transferDto.getAmount());
+            int updatedResponse = dslContext.update(BankAccount.BANK_ACCOUNT)
+                    .set(Tables.BANK_ACCOUNT.BALANCE, debitedAccountProcess.getBalance())
+                    .where(BankAccount.BANK_ACCOUNT.ID.eq(debitedAccountProcess.getId()))
+                    .execute();
+            log.info("Credit Operation successful, response: [{}]", updatedResponse);
 
-            if (debitedAccount == null) {
-                log.error("::: Transfer failed insufficient balance.");
-                throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
-            }
+            final AccountModel creditedAccountProcess = creditAccountModel.deposit(transferDto.getAmount());
+            int updatedCreditResponse = dslContext.update(BankAccount.BANK_ACCOUNT)
+                    .set(Tables.BANK_ACCOUNT.BALANCE, creditedAccountProcess.getBalance())
+                    .set(Tables.BANK_ACCOUNT.IS_LIQUIDATED, false)
+                    .set(Tables.BANK_ACCOUNT.IS_LIQUIDITY_APPROVAL, false)
+                    .where(BankAccount.BANK_ACCOUNT.ID.eq(creditedAccountProcess.getId()))
+                    .execute();
 
-            final AccountModel creditedAccount = creditAccount.deposit(transferDto.getAmount());
-
-            mAccountRepo.save(debitedAccount);
-
-            creditedAccount.setIsLiquidated(false);
-            creditAccount.setIsLiquidityApproval(false);
-            mAccountRepo.save(creditedAccount);
-
-            log.info("::: Account has been debited with iban: [{}]", debitedAccount.getIban());
-            log.info("::: Account has been credited with iban: [{}] ", creditedAccount.getIban());
+            log.info("::: Account fundTransfer is successfully with response: [{}]", updatedCreditResponse);
+            log.info("::: Account has been debited with iban: [{}]", debitedAccountProcess.getIban());
+            log.info("::: Account has been credited with iban: [{}] ", creditedAccountProcess.getIban());
             log.info(mMessageConfig.getTransfer_successful());
             transactionModel.setStatus(TranxStatus.SUCCESSFUL.name());
             TransactionModel savedTransaction = mTransactionRepo.save(transactionModel);
+            TransactionsRecord existLogModelWithRef = dslContext.fetchOne(Tables.TRANSACTIONS,
+                    Tables.TRANSACTIONS.TRANX_REF.eq(transferDto.getTranxRef()));
+            if (existLogModelWithRef != null) {
+                log.error("::: Duplicate error. LogModel already exist.");
+            }
+            final TransactionsRecord transactionsRecord =
+                    TransactionMapper.mapLogModelToRecord(transactionModel);
+
+
             log.info("::: FundTransfer LogModel audited successfully");
 
-            receipient.setEmail(creditAccount.getUserModel().getEmail());
-            receipient.setTelephone(creditAccount.getUserModel().getPhone());
+            receipient.setEmail(creditAccountModel.getUserModel().getEmail());
+            receipient.setTelephone(creditAccountModel.getUserModel().getPhone());
             receipients.add(receipient);
             String notificationMessage =
                     String.format("Your account %s has been credit with sum of [%s%s] only ",
-                            creditAccount.getIban(),
-                            creditAccount.getCurrency(),
+                            creditAccountModel.getIban(),
+                            creditAccountModel.getCurrency(),
                             transferDto.getAmount());
             data.setMessage(notificationMessage);
             data.setRecipients(receipients);
@@ -176,7 +190,7 @@ public class TransactionJOOQService {
             notificationLog.setTranxDate(savedTransaction.getPerformedAt());
 
             notificationLog.setEventType(TransType.TRANSFER.name());
-            String name = userModel.get().getFirstName().concat(" ").concat(userModel.get().getLastName());
+            String name = sender.getFirstName().concat(" ").concat(sender.getLastName());
             notificationLog.setInitiator(name);
 
             final NotificationLogEvent
@@ -219,12 +233,7 @@ public class TransactionJOOQService {
                     BankAccount.BANK_ACCOUNT.ACCOUNT_IBAN.eq(topupDto.getIban()));
 
             assert crediAccountRecord != null;
-            CustomersRecord customersRecord = dslContext.fetchOne(Tables.CUSTOMERS,
-                    Tables.CUSTOMERS.ID.eq(crediAccountRecord.getUserModelId()));
-
-            assert customersRecord != null;
-            UserModel userModelMinRecord = UserMapper.mapRecordToModel(customersRecord);
-            AccountModel accountModel = AccountMapper.mapRecordToModel(crediAccountRecord, userModelMinRecord);
+            AccountModel accountModel = getAccountModel(crediAccountRecord);
 
 
             log.info("::: About to validate Account owner.....");
@@ -275,6 +284,18 @@ public class TransactionJOOQService {
 
     }
 
+    // Get AccountModel from Record
+    private AccountModel getAccountModel(BankAccountRecord crediAccountRecord) {
+        assert crediAccountRecord != null;
+        CustomersRecord customersRecord = dslContext.fetchOne(Tables.CUSTOMERS,
+                Tables.CUSTOMERS.ID.eq(crediAccountRecord.getUserModelId()));
+
+        assert customersRecord != null;
+        UserModel userModelMinRecord = UserMapper.mapRecordToModel(customersRecord);
+        AccountModel accountModel = AccountMapper.mapRecordToModel(crediAccountRecord, userModelMinRecord);
+        return accountModel;
+    }
+
     public Account doFundWithdrawal(WithrawalDto withrawalDto, HttpServletRequest request) throws TransferNotValidException {
         log.info("::: In doFundWithdrawal.....");
 
@@ -305,6 +326,7 @@ public class TransactionJOOQService {
 
             log.info("::: About to validate Account owner.....");
             String userName = jwtUtil.extractUsername(token);
+
             // Find by currenly loggedIn user
             CustomersRecord userModel = dslContext.fetchOne(Customers.CUSTOMERS, Customers.CUSTOMERS.EMAIL.eq(userName));
             if (userModel == null) {

@@ -1,4 +1,5 @@
 package com.sankore.bank.entities.builder;
+import com.sankore.bank.Tables;
 import com.sankore.bank.dtos.request.LiquidateDto;
 import com.sankore.bank.dtos.request.TopupDto;
 import com.sankore.bank.dtos.request.WithrawalDto;
@@ -6,6 +7,11 @@ import com.sankore.bank.entities.models.TransactionModel;
 import com.sankore.bank.dtos.response.Transaction;
 import com.sankore.bank.dtos.request.TransferDto;
 import com.sankore.bank.enums.TransType;
+import com.sankore.bank.tables.Transactions;
+import com.sankore.bank.tables.records.TransactionsRecord;
+
+import javax.persistence.Column;
+import java.math.BigDecimal;
 
 public class TransactionMapper {
 
@@ -91,5 +97,27 @@ public class TransactionMapper {
                 .tranNarration(transactionModel.getTranNarration())
                 .userId(transactionModel.getUserId())
                 .build();
+    }
+
+
+    public static TransactionsRecord mapLogModelToRecord(TransactionModel transactionModel) {
+
+        TransactionsRecord transactionsRecord = new TransactionsRecord();
+        transactionsRecord.setAmount(transactionModel.getAmount());
+        transactionsRecord.setStatus(transactionModel.getStatus());
+        transactionsRecord.setBenefAccountNo(transactionModel.getBenefAccountNo());
+        transactionsRecord.setDebitAccountNo(transactionModel.getDebitAccountNo());
+        transactionsRecord.setPaymentReference(transactionModel.getPaymentReference());
+        transactionsRecord.setTranCrncy(transactionModel.getTranCrncy());
+        transactionsRecord.setChannelCode(transactionModel.getChannelCode());
+        transactionsRecord.setTranNarration(transactionModel.getTranNarration());
+        transactionsRecord.setTranType(transactionModel.getTranType());
+        transactionsRecord.setTranxRef(transactionModel.getTranxRef());
+        transactionsRecord.setUserToken(transactionModel.getUserToken());
+        transactionsRecord.setUserId(transactionModel.getUserId());
+        transactionsRecord.setIsLiquidate(transactionModel.getIsLiquidate());
+        transactionsRecord.setLiquidityApproval(transactionModel.getLiquidityApproval());
+
+        return transactionsRecord;
     }
 }
