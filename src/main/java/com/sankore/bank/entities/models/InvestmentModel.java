@@ -90,34 +90,44 @@ public class InvestmentModel {
         return this;
     }
 
+    // TODO: add to currently open investment
     public InvestmentModel topUpInvestment(BigDecimal topUpAmount, String investmentRefNo) {
         if (!investmentRefNo.equals(this.investmentRefNo)) {
             throw new RuntimeException("Error accessing investment, Iban is not owned");
         }
-        this.investedAmount = investedAmount.add(topUpAmount);
+        this.investedAmount = investedAmount.add(topUpAmount, new MathContext(4));
 
         return this;
     }
 
+    //TODO: Transfer accrued Interest to savings account
     public BigDecimal tranferAccruedInterest(BigDecimal interestAmount, String investmentRefNo) {
         if (!investmentRefNo.equals(this.investmentRefNo)) {
             throw new RuntimeException("Error accessing investment, Iban is not owned");
         }
         BigDecimal currentInterestAccrued = this.accruedBalance.subtract(investedAmount);
         if (currentInterestAccrued.compareTo(interestAmount) > 0) {
-            this.accruedBalance = this.accruedBalance.subtract(interestAmount);
+            this.accruedBalance = this.accruedBalance.subtract(interestAmount, new MathContext(4));
             return interestAmount;
         } else {
             throw new RuntimeException("Not a valid amount for profit withdrawal");
         }
     }
 
-
+    // TODO: extend Investemt CLOSE date to continue with the currently running investment.
     public InvestmentModel extendInvestment(String extentionDate) throws ParseException {
-        final Date date = TransactionObjFormatter.getDate(extentionDate);
-        this.setEndDate(date);
+        Date date = TransactionObjFormatter.getDate(extentionDate);
+        if (this.getEndDate().getTime() < date.getTime()) {
+            this.setEndDate(date);
+            return this;
+        }
+        else {
+            throw new RuntimeException("Not a valid extension Date for investment");
+        }
 
-        return this;
+
+
+
     }
 
     public InvestmentModel doAccruedInterest(BigDecimal dailyAccruedAmount) throws ParseException {
