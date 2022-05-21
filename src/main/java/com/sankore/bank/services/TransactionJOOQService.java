@@ -9,6 +9,7 @@ import com.sankore.bank.dtos.response.*;
 import com.sankore.bank.entities.builder.AccountMapper;
 import com.sankore.bank.entities.builder.InvestmentMapper;
 import com.sankore.bank.entities.builder.TransactionMapper;
+import com.sankore.bank.entities.builder.UserMapper;
 import com.sankore.bank.entities.models.AccountModel;
 import com.sankore.bank.entities.models.InvestmentModel;
 import com.sankore.bank.entities.models.TransactionModel;
@@ -282,9 +283,14 @@ public class TransactionJOOQService {
 //            AccountModel accountModel = mAccountRepo.findAccountModelByIban(withrawalDto.getIban());
             BankAccountRecord accountRecord = dslContext.fetchOne(BankAccount.BANK_ACCOUNT,
                     BankAccount.BANK_ACCOUNT.ACCOUNT_IBAN.eq(withrawalDto.getIban()));
-            AccountModel accountModel = AccountMapper.mapRecordToModel(accountRecord);
 
-            System.out.println("JOOQ_ACCT_IBAN: " + accountModel.getAccountIban());
+            assert accountRecord != null;
+            CustomersRecord customersRecord = dslContext.fetchOne(Tables.CUSTOMERS,
+                    Tables.CUSTOMERS.ID.eq(accountRecord.getUserModelId()));
+
+            assert customersRecord != null;
+            UserModel userModelMinRecord = UserMapper.mapRecordToModel(customersRecord);
+            AccountModel accountModel = AccountMapper.mapRecordToModel(accountRecord, userModelMinRecord);
 
             log.info("::: About to validate Account owner.....");
             String userName = jwtUtil.extractUsername(token);
@@ -294,9 +300,8 @@ public class TransactionJOOQService {
                 log.error("::: Account broken, Invalid Account access");
                 throw new IllegalAccessException("Account broken, Invalid Account access");
             }
-            CustomersRecord customersRecord = dslContext.fetchOne(Tables.CUSTOMERS, Tables.CUSTOMERS.ID.eq(accountModel.getUserModelId()));
+
             // Verify transaction token is valid
-            assert customersRecord != null;
             if (!customersRecord.getVerificationCode().equals(withrawalDto.getVerificationCode())) {
                 log.error("::: VerificationCode error");
                 throw new IllegalArgumentException("VerificationCode error");
@@ -324,11 +329,9 @@ public class TransactionJOOQService {
             }
 
             final AccountModel debitedAccount = accountModel.withdraw(withrawalDto.getAmount());
-
-            if (debitedAccount == null) {
-                log.error("::: Transfer failed insufficient balance.");
-                throw new TransferNotValidException(mMessageConfig.getTranfer_fail());
-            }
+            int updatedResponse = dslContext.update(BankAccount.BANK_ACCOUNT).set(BankAccount.BANK_ACCOUNT.BALANCE, debitedAccount.getBalance())
+                    .where(BankAccount.BANK_ACCOUNT.ID.eq(accountRecord.getId())).execute();
+            log.info("::: BalanceUpdateResponse: [{}]", updatedResponse);
 
             AccountModel debitedAccountSaved = mAccountRepo.save(debitedAccount);
             log.info("::: Account debit updated successfully with payload`; [{}]", debitedAccountSaved);

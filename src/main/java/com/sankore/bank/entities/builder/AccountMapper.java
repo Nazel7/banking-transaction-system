@@ -13,6 +13,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.UUID;
 
@@ -31,45 +32,25 @@ public class AccountMapper {
                 .build();
     }
 
-    public static AccountModel mapRecordToModel(BankAccountRecord accountRecord) {
+    public static AccountModel mapRecordToModel(BankAccountRecord accountRecord, UserModel userModel) {
 
-        @Id
-        @Basic(optional = false)
-        @GeneratedValue(strategy = GenerationType.AUTO)
-        private UUID id;
-
-        @Setter(AccessLevel.NONE)
-        private BigDecimal balance;
-
-        private String bankCode;
-
-        @Setter(AccessLevel.NONE)
-        @Column(name = "account_iban")
-        private String iban;
-
-        private String bvn;
-
-        private String accountType;
-
-        private Boolean isLiquidated;
-
-        private Boolean isLiquidityApproval;
-
-        @CreationTimestamp
-        private Date createdAt;
-
-        @UpdateTimestamp
-        private Date updatedAt;
-
-        @OneToOne
-        @JoinColumn
-        private UserModel userModel;
-
-        @Setter(AccessLevel.NONE)
-        private String currency;
-
-        private String status;
-
-
+        return AccountModel
+                .builder()
+                .id(accountRecord.getId())
+                .balance(accountRecord.getBalance())
+                .bankCode(accountRecord.getBankCode())
+                .iban(accountRecord.getAccountIban())
+                .bvn(accountRecord.getBvn())
+                .accountType(accountRecord.getAccountType())
+                .isLiquidated(accountRecord.getIsLiquidated())
+                .isLiquidityApproval(accountRecord.getIsLiquidityApproval())
+                .createdAt(Date.from(accountRecord.getCreatedAt().toLocalDate()
+                        .atStartOfDay(ZoneId.systemDefault()).toInstant()))
+                .updatedAt(Date.from(accountRecord.getUpdatedAt().toLocalDate()
+                        .atStartOfDay(ZoneId.systemDefault()).toInstant()))
+                .currency(accountRecord.getCurrency())
+                .status(accountRecord.getStatus())
+                .userModel(userModel)
+                .build();
     }
 }

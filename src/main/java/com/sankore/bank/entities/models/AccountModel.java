@@ -3,9 +3,7 @@ package com.sankore.bank.entities.models;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.Tolerate;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -22,8 +20,10 @@ import java.util.UUID;
 @Table(name = "bank_account", indexes = {
         @Index(name = "account_iban_index", columnList = "account_iban")
 })
+@Builder
 @Getter
 @Setter
+@AllArgsConstructor
 @Access(AccessType.FIELD)
 public class AccountModel {
 
@@ -64,7 +64,7 @@ public class AccountModel {
 
     private String status;
 
-    @Tolerate
+
     public AccountModel() {
 
     }

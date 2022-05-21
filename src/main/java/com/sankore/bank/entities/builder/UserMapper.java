@@ -1,5 +1,7 @@
 package com.sankore.bank.entities.builder;
 
+import com.sankore.bank.entities.models.AccountModel;
+import com.sankore.bank.entities.models.InvestmentModel;
 import com.sankore.bank.enums.TierLevel;
 import com.sankore.bank.entities.models.SecureUserModel;
 import com.sankore.bank.entities.models.UserModel;
@@ -8,7 +10,14 @@ import com.sankore.bank.dtos.response.LogginResponse;
 import com.sankore.bank.dtos.request.SignUpDto;
 import com.sankore.bank.dtos.request.UserInfoDto;
 
+import com.sankore.bank.tables.records.CustomersRecord;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import javax.persistence.Column;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.validation.constraints.Email;
+import java.util.List;
 
 public class UserMapper {
 
@@ -97,5 +106,24 @@ public class UserMapper {
                 .password(passcode)
                 .build();
 
+    }
+
+    public static UserModel mapRecordToModel(CustomersRecord customersRecord) {
+
+        return UserModel
+                .builder()
+                .homeAddress(customersRecord.getHomeAddress())
+                .verifiedPhone(customersRecord.getVerifiedPhone())
+                .verificationCode(customersRecord.getVerificationCode())
+                .phone(customersRecord.getPhone())
+                .verifiedHomeAddress(customersRecord.getVerifiedHomeAddress())
+                .email(customersRecord.getEmail())
+                .verifiedEmail(customersRecord.getVerifiedEmail())
+                .bvn(customersRecord.getBvn())
+                .verifiedBvn(customersRecord.getVerifiedBvn())
+                .id(customersRecord.getId())
+                .tierLevel(customersRecord.getTierLevel())
+                .address(customersRecord.getAddress())
+                .build();
     }
 }
