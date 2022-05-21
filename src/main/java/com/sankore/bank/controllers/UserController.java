@@ -31,7 +31,7 @@ public class UserController {
 
     private final UserService mUserService;
 
-    @Async
+//    @Async
     @CrossOrigin
     @PostMapping("/signup")
     @ApiOperation(value = "::: createUser :::", notes = "API for user creation with login credentials")
@@ -43,7 +43,7 @@ public class UserController {
         return CompletableFuture.completedFuture(new ResponseEntity<>(user, HttpStatus.CREATED));
     }
 
-    @Async
+//    @Async
     @CrossOrigin
     @PreAuthorize("hasRole('CUSTOMER')")
     @ApiOperation(value = "::: upgradeUserInfo :::", notes = "API to upgrade user Level based on the"

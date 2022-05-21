@@ -6,7 +6,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableScheduling
-@EnableAsync
+//@EnableAsync
 @SpringBootApplication(scanBasePackages = {"com.sankore.bank"})
 public class BankApplication {
 

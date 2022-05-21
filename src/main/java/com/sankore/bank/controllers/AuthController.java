@@ -43,14 +43,14 @@ public class AuthController {
 
     private final SecureUserRepo mSecureUserRepo;
 
-    @Async
+//    @Async
     @ApiOperation(value = "::: welcome :::", notes = "application health check")
     @GetMapping(" ")
     public CompletableFuture<String> welcome() {
         return CompletableFuture.completedFuture("Welcome to Sankore-Gafar Banking Service !!");
     }
 
-    @Async
+//    @Async
     @ApiOperation(value = "::: generateToken :::", notes = "Login channel")
     @PostMapping(" ")
     public CompletableFuture<ResponseEntity<LogginResponse>> generateToken(@RequestBody LoginRequestUtil loginRequestUtil) throws Exception {

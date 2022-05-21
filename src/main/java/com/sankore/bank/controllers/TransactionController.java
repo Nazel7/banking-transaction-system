@@ -6,6 +6,7 @@ import com.sankore.bank.dtos.response.Investment;
 import com.sankore.bank.dtos.response.Transaction;
 import com.sankore.bank.dtos.response.TransferNotValidException;
 import com.sankore.bank.entities.models.InvestmentModel;
+import com.sankore.bank.services.TransactionJOOQService;
 import com.sankore.bank.services.TransactionService;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,7 @@ import java.util.concurrent.CompletableFuture;
 public class TransactionController {
 
     private final TransactionService mTransactionService;
+    private final TransactionJOOQService transactionJOOQService;
     private final DSLContext dslContext;
 
     @Async
@@ -63,7 +65,7 @@ public class TransactionController {
         return CompletableFuture.completedFuture(new ResponseEntity<>(account, HttpStatus.OK));
     }
 
-    @Async
+//    @Async
     @CrossOrigin
     @PreAuthorize("hasRole('CUSTOMER')")
     @ApiOperation(value = "::: fundAccount :::", notes = "Api for quick account topUp")
@@ -71,12 +73,13 @@ public class TransactionController {
     public CompletableFuture<ResponseEntity<Account>> withdrawAmount(@RequestBody WithrawalDto withrawalDto, HttpServletRequest request)
             throws TransferNotValidException {
 
-        final Account account = mTransactionService.doFundWithdrawal(withrawalDto, request);
+//        final Account account = mTransactionService.doFundWithdrawal(withrawalDto, request);
+        final Account account = transactionJOOQService.doFundWithdrawal(withrawalDto, request);
 
         return CompletableFuture.completedFuture(new ResponseEntity<>(account, HttpStatus.OK));
     }
 
-    @Async
+//    @Async
     @CrossOrigin
     @PreAuthorize("hasRole('CUSTOMER')")
     @ApiOperation(value = "::: fundAccount :::", notes = "Api for quick account topUp")
@@ -89,7 +92,7 @@ public class TransactionController {
         return CompletableFuture.completedFuture(new ResponseEntity<>(account, HttpStatus.OK));
     }
 
-    @Async
+//    @Async
     @CrossOrigin
     @PreAuthorize("hasRole('CUSTOMER')")
     @ApiOperation(value = "::: fundAccount :::", notes = "Api for quick account topUp")
@@ -103,7 +106,7 @@ public class TransactionController {
     }
 
     // Test
-    @Async
+//    @Async
     @CrossOrigin
 //    @PreAuthorize("hasRole('CUSTOMER')")
     @ApiOperation(value = "::: fundAccount :::", notes = "Api for quick account topUp")
