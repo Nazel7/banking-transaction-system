@@ -137,6 +137,9 @@ public class TransactionService {
             final AccountModel creditedAccount = creditAccount.deposit(transferDto.getAmount());
 
             mAccountRepo.save(debitedAccount);
+
+            creditedAccount.setIsLiquidated(false);
+            creditAccount.setIsLiquidityApproval(false);
             mAccountRepo.save(creditedAccount);
 
             log.info("::: Account has been debited with iban: [{}]", debitedAccount.getIban());

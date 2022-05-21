@@ -26,8 +26,10 @@ import com.sankore.bank.repositories.TransactionRepo;
 import com.sankore.bank.repositories.UserRepo;
 import com.sankore.bank.tables.BankAccount;
 import com.sankore.bank.tables.Customers;
+import com.sankore.bank.tables.SecureUser;
 import com.sankore.bank.tables.records.BankAccountRecord;
 import com.sankore.bank.tables.records.CustomersRecord;
+import com.sankore.bank.tables.records.InvestmentModelRecord;
 import com.sankore.bank.utils.BaseUtil;
 import com.sankore.bank.utils.TierLevelSpecUtil;
 import lombok.RequiredArgsConstructor;
@@ -147,6 +149,9 @@ public class TransactionJOOQService {
             final AccountModel creditedAccount = creditAccount.deposit(transferDto.getAmount());
 
             mAccountRepo.save(debitedAccount);
+
+            creditedAccount.setIsLiquidated(false);
+            creditAccount.setIsLiquidityApproval(false);
             mAccountRepo.save(creditedAccount);
 
             log.info("::: Account has been debited with iban: [{}]", debitedAccount.getIban());
@@ -429,10 +434,14 @@ public class TransactionJOOQService {
                         " Date: " + new Date());
             }
 
-            debitedAccount.setIsLiquidated(true);
-            debitedAccount.setIsLiquidityApproval(liquidateDto.getIsLiquidityApproval());
-            AccountModel debitedAccountSaved = mAccountRepo.save(debitedAccount);
-            log.info("::: Account debit updated successfully with payload`; [{}]", debitedAccountSaved);
+            int updatedResponse = dslContext.update(BankAccount.BANK_ACCOUNT)
+                    .set(BankAccount.BANK_ACCOUNT.BALANCE, debitedAccount.getBalance())
+                    .set(BankAccount.BANK_ACCOUNT.IS_LIQUIDATED, true)
+                    .set(BankAccount.BANK_ACCOUNT.IS_LIQUIDITY_APPROVAL, liquidateDto.getIsLiquidityApproval())
+                    .where(BankAccount.BANK_ACCOUNT.ID.eq(accountRecord.getId()))
+                    .execute();
+
+            log.info("::: Account liquidity updated successfully with response: [{}]", updatedResponse);
 
             transactionModel.setStatus(TranxStatus.SUCCESSFUL.name());
             TransactionModel savedLogModel = mTransactionRepo.save(transactionModel);
@@ -445,8 +454,8 @@ public class TransactionJOOQService {
                             accountModel.getBalance());
             data.setMessage(notificationMessage);
             notificationLog.setData(data);
-            notificationLog.setInitiator(debitedAccountSaved.getUserModel().getFirstName().concat(" ")
-                    .concat(debitedAccountSaved.getUserModel().getLastName()));
+            notificationLog.setInitiator(userModelMinRecord.getFirstName().concat(" ")
+                    .concat(userModelMinRecord.getLastName()));
             notificationLog.setEventType(TransType.LIQUIDATE.name());
             notificationLog.setChannelCode(ChannelConsts.VENDOR_CHANNEL);
             notificationLog.setTranxDate(new Date());
@@ -488,27 +497,53 @@ public class TransactionJOOQService {
             // Check if investment Type already Opened
             final InvestmentModel openInvestemnt =
                     mInvestmentRepo.getInvestmentModelByStatusAndPlan(TranxStatus.OPEN.name(), dto.getPlan());
-            if (openInvestemnt != null) {
+
+            final InvestmentModelRecord openInvestmentRecord =
+                    dslContext.fetchOne(com.sankore.bank.tables.InvestmentModel.INVESTMENT_MODEL,
+                            com.sankore.bank.tables.InvestmentModel.INVESTMENT_MODEL.STATUS.eq(TranxStatus.OPEN.name()),
+                            com.sankore.bank.tables.InvestmentModel.INVESTMENT_MODEL.PLAN.eq(dto.getPlan()));
+
+            System.out.println("I AM HERE...");
+
+
+            if (openInvestmentRecord != null) {
                 log.error("::: Your investment is currently Open on this Plan, please try order plans . Thank you");
                 throw new RuntimeException("Your investment is currently Open on this Plan, please try order plans ");
             }
 
             String userName = jwtUtil.extractUsername(token);
-            AccountModel accountModel = mAccountRepo.findAccountModelByIban(dto.getIban());
+//            AccountModel accountModel = mAccountRepo.findAccountModelByIban(dto.getIban());
+
+            final BankAccountRecord accountRecord = dslContext.fetchOne(BankAccount.BANK_ACCOUNT,
+                    BankAccount.BANK_ACCOUNT.ACCOUNT_IBAN.eq(dto.getIban()));
+            // Fetch by currently login user
+            final CustomersRecord customersRecord = dslContext.fetchOne(Customers.CUSTOMERS,
+                    Customers.CUSTOMERS.EMAIL.eq(userName));
+
+            assert customersRecord != null;
+            final UserModel userModel = UserMapper.mapRecordToModel(customersRecord);
+
+            assert accountRecord != null;
+            final AccountModel accountModel = AccountMapper.mapRecordToModel(accountRecord, userModel);
             if (!userName.equals(accountModel.getUserModel().getEmail())) {
                 log.info("::: Account broken, UnAuthorized account access");
                 throw new IllegalAccessException("Account broken, UnAuthorized account access");
             }
-            accountModel = accountModel.withdraw(dto.getAmount());
-            if (accountModel == null || !dto.getBankCode().equals(accountModel.getBankCode())) {
+            AccountModel accountModelProcessed = accountModel.withdraw(dto.getAmount());
+            if (accountModelProcessed == null || !dto.getBankCode().equals(accountModelProcessed.getBankCode())) {
                 log.error("::: Insufficient Balance for Investment");
                 throw new IllegalArgumentException("Insufficient Balance for Investment");
             }
 
             final InvestmentModel investmentModel = InvestmentMapper.mapDtoToModel(dto);
-            final InvestmentModel invExistOnPending =
-                    mInvestmentRepo.getInvestmentModelByStatusAndPlan(TranxStatus.PENDING.name(), dto.getPlan());
-            if (invExistOnPending != null) {
+//            final InvestmentModel invExistOnPending =
+//                    mInvestmentRepo.getInvestmentModelByStatusAndPlan(TranxStatus.PENDING.name(), dto.getPlan());
+            final InvestmentModelRecord inExistOnPendingRecord =
+                    dslContext.fetchOne(com.sankore.bank.tables.InvestmentModel.INVESTMENT_MODEL,
+                            com.sankore.bank.tables.InvestmentModel.INVESTMENT_MODEL.STATUS.eq(TranxStatus.PENDING.name()),
+                            com.sankore.bank.tables.InvestmentModel.INVESTMENT_MODEL.PLAN.eq(dto.getPlan()));
+
+            if (inExistOnPendingRecord != null) {
                 log.error(":::Investment exist but not yet active");
                 throw new IllegalArgumentException("Investment of type exist but not yet active");
             }
@@ -521,9 +556,13 @@ public class TransactionJOOQService {
                 throw new IllegalArgumentException("Error occur while try to invest");
 
             }
-            investedAmountModel.setUserModelInv(accountModel.getUserModel());
-            InvestmentModel investedModel = mInvestmentRepo.save(investedAmountModel);
-            log.info("::: Investemnt is successful with payload: [{}]", investedModel);
+//            investedAmountModel.setUserModelInv(accountModel.getUserModel());
+            int invProccessedResponse = dslContext.update(com.sankore.bank.tables.InvestmentModel.INVESTMENT_MODEL)
+                    .set(com.sankore.bank.tables.InvestmentModel.INVESTMENT_MODEL.USER_MODEL_INV_ID, accountModel.getUserModel().getId())
+                    .set(com.sankore.bank.tables.InvestmentModel.INVESTMENT_MODEL.INVESTED_AMOUNT, investedAmountModel.getInvestedAmount())
+                    .where(BankAccount.BANK_ACCOUNT.ID.eq(accountRecord.getId()))
+                    .execute();
+            log.info("::: Investemnt is successful with response: [{}]", invProccessedResponse);
 
             String notificationMessage =
                     String.format("Your Investment from your account: [%s] is successful with Amount: [%s%s] only ",
@@ -535,10 +574,10 @@ public class TransactionJOOQService {
             notificationLog.setData(data);
             notificationLog.setInitiator(accountModel.getUserModel().getFirstName().concat(" ")
                     .concat(accountModel.getUserModel().getLastName()));
-            notificationLog.setEventType(TransType.WITHDRAWAL.name());
+            notificationLog.setEventType(TransType.INVESTMENT.name());
             notificationLog.setChannelCode(ChannelConsts.VENDOR_CHANNEL);
-            notificationLog.setTranxDate(investedModel.getCreatedAt());
-            notificationLog.setTranxRef(investedModel.getInvestmentRefNo());
+            notificationLog.setTranxDate(investedAmountModel.getCreatedAt());
+            notificationLog.setTranxRef(investedAmountModel.getInvestmentRefNo());
 
             final NotificationLogEvent
                     notificationLogEvent = new NotificationLogEvent(this, notificationLog);
@@ -547,7 +586,7 @@ public class TransactionJOOQService {
                     notificationLogEvent.getNotificationLog());
 
             log.info("::: Investment is successful....");
-            return InvestmentMapper.mapModelToDto(investedModel);
+            return InvestmentMapper.mapModelToDto(investmentModel);
 
         } catch (Exception ex) {
             ex.printStackTrace();

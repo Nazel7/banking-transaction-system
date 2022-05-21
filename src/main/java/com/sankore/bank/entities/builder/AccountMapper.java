@@ -51,6 +51,7 @@ public class AccountMapper {
                 .currency(accountRecord.getCurrency())
                 .status(accountRecord.getStatus())
                 .userModel(userModel)
+                .accountType(accountRecord.getAccountType())
                 .build();
     }
 }
