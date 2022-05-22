@@ -1,7 +1,6 @@
 package com.sankore.bank.entities.builder;
 
 import com.sankore.bank.entities.models.SecureUserModel;
-import com.sankore.bank.entities.models.UserModel;
 import com.sankore.bank.tables.records.CustomersRecord;
 import com.sankore.bank.tables.records.SecureUserRecord;
 

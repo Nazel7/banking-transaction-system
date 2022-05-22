@@ -210,7 +210,6 @@ public class TransactionJOOQService {
         try {
 
             String token = request.getHeader("Authorization");
-            System.out.println(token);
             if (token.contains("Bearer")) {
                 token = token.split(" ")[1];
             }
@@ -372,7 +371,6 @@ public class TransactionJOOQService {
                 log.error("::: Duplicate error. LogModel already exist.");
                 throw new IllegalArgumentException("Duplicate error. LogModel already exist.");
             }
-
 
             if (!userModel.getVerificationCode().equals(withrawalDto.getVerificationCode())) {
                 log.error("::: Account broken, Invalid access...");

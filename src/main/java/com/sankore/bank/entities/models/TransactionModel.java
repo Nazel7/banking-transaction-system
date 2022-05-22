@@ -34,7 +34,7 @@ public class TransactionModel {
     @Column(unique = true, length = 30)
     private String paymentReference;
 
-    private String tranCrncy;
+    private String currency;
     private String channelCode;
     private String tranNarration;
     private String tranType;

@@ -25,7 +25,7 @@ public class AsyncErrorConfig extends AsyncConfigurerSupport {
         threadPoolTaskExecutor.setCorePoolSize(5);
         threadPoolTaskExecutor.setMaxPoolSize(10);
         threadPoolTaskExecutor.setQueueCapacity(500);
-        threadPoolTaskExecutor.setWaitForTasksToCompleteOnShutdown(true);
+//        threadPoolTaskExecutor.setWaitForTasksToCompleteOnShutdown(true);
         threadPoolTaskExecutor.initialize();
         return threadPoolTaskExecutor;
     }

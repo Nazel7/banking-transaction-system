@@ -35,9 +35,7 @@ import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class TransactionController {
 
-    private final TransactionService mTransactionService;
     private final TransactionJOOQService transactionJOOQService;
-    private final DSLContext dslContext;
 
     @Async
     @CrossOrigin
@@ -103,18 +101,5 @@ public class TransactionController {
 
         return CompletableFuture.completedFuture(new ResponseEntity<>(investment, HttpStatus.CREATED));
     }
-
-    // Test
-//    @Async
-    @CrossOrigin
-//    @PreAuthorize("hasRole('CUSTOMER')")
-    @ApiOperation(value = "::: fundAccount :::", notes = "Api for quick account topUp")
-    @GetMapping("/jooqq")
-    public CompletableFuture<ResponseEntity<?>> investmentList() {
-
-        return CompletableFuture.completedFuture(new ResponseEntity<>("HELLO", HttpStatus.CREATED));
-
-    }
-
 
 }
