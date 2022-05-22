@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +25,7 @@ public class UserController {
 
     private final UserJOOQService userJOOQService;
 
-    //    @Async
+    @Async
     @CrossOrigin
     @PostMapping("/signup")
     @ApiOperation(value = "::: createUser :::", notes = "API for user creation with login credentials")
@@ -36,7 +37,7 @@ public class UserController {
         return CompletableFuture.completedFuture(new ResponseEntity<>(user, HttpStatus.CREATED));
     }
 
-    //    @Async
+    @Async
     @CrossOrigin
     @PreAuthorize("hasRole('CUSTOMER')")
     @ApiOperation(value = "::: upgradeUserInfo :::", notes = "API to upgrade user Level based on the"

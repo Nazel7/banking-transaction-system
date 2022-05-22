@@ -65,7 +65,7 @@ public class TransactionController {
         return CompletableFuture.completedFuture(new ResponseEntity<>(account, HttpStatus.OK));
     }
 
-//    @Async
+    @Async
     @CrossOrigin
     @PreAuthorize("hasRole('CUSTOMER')")
     @ApiOperation(value = "::: fundAccount :::", notes = "Api for quick account withrawal")
@@ -78,7 +78,7 @@ public class TransactionController {
         return CompletableFuture.completedFuture(new ResponseEntity<>(account, HttpStatus.OK));
     }
 
-//    @Async
+    @Async
     @CrossOrigin
     @PreAuthorize("hasRole('CUSTOMER')")
     @ApiOperation(value = "::: fundAccount :::", notes = "Api for quick account liquidity")
@@ -91,7 +91,7 @@ public class TransactionController {
         return CompletableFuture.completedFuture(new ResponseEntity<>(account, HttpStatus.OK));
     }
 
-//    @Async
+    @Async
     @CrossOrigin
     @PreAuthorize("hasRole('CUSTOMER')")
     @ApiOperation(value = "::: fundAccount :::", notes = "Api for quick account Investment")
