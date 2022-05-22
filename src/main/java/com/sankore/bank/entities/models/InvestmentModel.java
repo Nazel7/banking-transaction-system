@@ -83,7 +83,7 @@ public class InvestmentModel {
         if (this.investedAmount == null) {
             this.investedAmount = new BigDecimal("0.00");
         }
-        this.investedAmount = this.investedAmount.add(investemntAmount, new MathContext(4));
+        this.investedAmount = this.investedAmount.add(investemntAmount);
         this.plan = plan;
 
         return this;
@@ -94,7 +94,7 @@ public class InvestmentModel {
         if (!investmentRefNo.equals(this.investmentRefNo)) {
             throw new RuntimeException("Error accessing investment, Iban is not owned");
         }
-        this.investedAmount = investedAmount.add(topUpAmount, new MathContext(4));
+        this.investedAmount = investedAmount.add(topUpAmount);
 
         return this;
     }
@@ -106,7 +106,7 @@ public class InvestmentModel {
         }
         BigDecimal currentInterestAccrued = this.accruedBalance.subtract(investedAmount);
         if (currentInterestAccrued.compareTo(interestAmount) > 0) {
-            this.accruedBalance = this.accruedBalance.subtract(interestAmount, new MathContext(4));
+            this.accruedBalance = this.accruedBalance.subtract(interestAmount);
             return interestAmount;
         } else {
             throw new RuntimeException("Not a valid amount for profit withdrawal");
@@ -125,9 +125,13 @@ public class InvestmentModel {
         }
     }
 
-    public InvestmentModel doAccruedInterest(BigDecimal dailyAccruedAmount) throws ParseException {
+    public InvestmentModel doAccruedInterest(BigDecimal dailyAccruedAmount) {
+        System.out.println("DailyInterest in Method: " + dailyAccruedAmount);
+        if (this.accruedBalance == null) {
+            this.accruedBalance = new BigDecimal("0.00");
+        }
 
-        this.accruedBalance = this.accruedBalance.add(dailyAccruedAmount, new MathContext(4));
+        this.accruedBalance = this.accruedBalance.add(dailyAccruedAmount);
 
         return this;
     }

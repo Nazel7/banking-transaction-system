@@ -25,6 +25,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -40,7 +41,8 @@ public class InvestmentJOOQScript implements SchdeduleJob {
     @Value("${page.custom-size}")
     private int customSize;
 
-    @Scheduled(cron = "${spring.application.investment-scheduler}")
+//    @Scheduled(cron = "${spring.application.investment-scheduler}")
+    @Scheduled(cron = "*/5 * * * * *")
     @Override
     public void run() {
 
@@ -53,11 +55,8 @@ public class InvestmentJOOQScript implements SchdeduleJob {
     private void runInvestmentPlanScript(String status, String invPlan) {
 
         try {
-            Pageable pageable = PageRequest.of(0, customSize);
-            Page<InvestmentModel> investmentModels =
-                    investmentRepo.findByStatusAndPlan(status,
-                            invPlan, pageable);
-            List<InvestmentModelRecord> investmentModelRecords =
+
+            final List<InvestmentModelRecord> investmentModelRecords =
                     dslContext.selectFrom(Tables.INVESTMENT_MODEL)
                             .where(Tables.INVESTMENT_MODEL.STATUS.eq(status)
                                     .and(Tables.INVESTMENT_MODEL.PLAN.eq(invPlan)))
@@ -66,6 +65,7 @@ public class InvestmentJOOQScript implements SchdeduleJob {
             if (investmentModelRecords.size() < 1) {
                 return;
             }
+            log.info("::: About to process Investment Daily profit.....");
 
             // Map list of InvestmentRecord into Model
             List<InvestmentModel> investmentModelList = new ArrayList<>();
@@ -94,7 +94,7 @@ public class InvestmentJOOQScript implements SchdeduleJob {
                         // Calculate Daily Interest
                         final LocalDate currentDate = LocalDate.now();
                         long daysInMonth = currentDate.lengthOfMonth();
-                        MathContext context = new MathContext(4);
+                        MathContext context = new MathContext(6);
                         InvestmentPlan plan = InvestmentPlan.getInvestmentPlan(investmentModel.getPlan());
                         double intrRatio = plan.getIntRateMonth() / 100;
                         final BigDecimal intrAmountPlanRatio = new BigDecimal(intrRatio, context);
@@ -110,11 +110,17 @@ public class InvestmentJOOQScript implements SchdeduleJob {
                             log.info("Daily Profit Accrued error...");
                             throw new RuntimeException("Daily Profit Accrued error. Date: " + new Date());
                         }
+                       log.info("::: Daily Profit: [{}]", dailyInterest);
+                        log.info("::: New AccruedBalance: [{}]", accruedIntModel.getAccruedBalance());
                         int investmentProcessResponse =
-                                dslContext.update(Tables.INVESTMENT_MODEL).set(Tables.INVESTMENT_MODEL.ACCRUED_BALANCE)
-                        accruedIntModel = investmentRepo.save(accruedIntModel);
+                                dslContext.update(Tables.INVESTMENT_MODEL)
+                                        .set(Tables.INVESTMENT_MODEL.ACCRUED_BALANCE, accruedIntModel.getAccruedBalance())
+                                        .set(Tables.INVESTMENT_MODEL.UPDATED_AT, LocalDateTime.now())
+                                        .where(Tables.INVESTMENT_MODEL.ID.eq(accruedIntModel.getId()))
+                                        .execute();
 
-                        log.info("::: Daily accrued interest is successful with payload: [{}]", accruedIntModel);
+                        log.info("::: Daily investment successful with response: [{}]", investmentProcessResponse);
+
                     }
 
                 }
