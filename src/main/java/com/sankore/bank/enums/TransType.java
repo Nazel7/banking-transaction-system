@@ -5,5 +5,6 @@ public enum TransType {
     WITHDRAWAL,
     DEPOSIT,
     TRANSFER,
-    LIQUIDATE
+    LIQUIDATE,
+    INVESTMENT
 }

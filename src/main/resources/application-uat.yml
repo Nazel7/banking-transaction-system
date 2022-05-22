@@ -5,16 +5,19 @@ spring:
   application:
     version: @project.version@
     description: @project.description@
+    bank-code: ${BANK_CODE}
+    investment-scheduler: ${INVESTMENT_SCHEDULER}
+    investment-activate-scheduler: ${INVESTMENT_ACTIVATION_SCHEDULER}
   mvc:
     servlet:
       path: /apis/sankore-bank
   datasource:
     url: ${POSTGRE_URL}
-    username: ${DATABASE_USERNAME}
-    password: ${DATABASE_PASSWORD}
+    username: ${POSTGRE_USERNAME}
+    password: ${POSTGRE_PASSWORD}
     driver-class-name: org.postgresql.Driver
   jpa:
-    show-sql: true
+    #    show-sql: true
     defer-datasource-initialization: true
     hibernate:
       ddl-auto: update
@@ -34,3 +37,7 @@ jwt:
 transaction:
   tranfer_fail: ${FAIL_TRANSACTION_MESSAGE}
   transfer_successful: ${SUCCESS_TRANSACTION_MESSAGE}
+
+
+page:
+  custom-size: 20

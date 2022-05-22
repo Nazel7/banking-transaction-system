@@ -16,6 +16,7 @@ public class SignUpDto {
     private String homeAddress;
     private String accountType;
     private String pin;
+    private String authority;
     private String bvn;
     private String verificationCode;
     private Boolean verifiedEmail;

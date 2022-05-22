@@ -61,6 +61,7 @@ public class BaseUtil {
             Objects.requireNonNull(signUpDto.getVerifiedHomeAddress());
             Objects.requireNonNull(signUpDto.getVerifiedBvn());
             Objects.requireNonNull(signUpDto.getVerifiedPhone());
+            Objects.requireNonNull(signUpDto.getAuthority());
             boolean isEmailValid = TransactionObjFormatter.isEmailMatch(signUpDto.getEmail());
             boolean isPhoneNumValid = TransactionObjFormatter.isMatchNigerianPhoneNum(signUpDto.getPhone());
             if (!isEmailValid || !isPhoneNumValid) {
@@ -117,6 +118,7 @@ public class BaseUtil {
             Objects.requireNonNull(topupDto.getChannelCode());
             Objects.requireNonNull(topupDto.getTranxRef());
             Objects.requireNonNull(topupDto.getTranxType());
+            Objects.requireNonNull(topupDto.getCurrency());
             if (ChannelConsts.ATM_CHANNEL.equals(topupDto.getChannelCode()) ||
                     ChannelConsts.NIBSS_CHANNEL.equals(topupDto.getChannelCode()) ||
                     ChannelConsts.INTRA_CHANNEL.equals(topupDto.getChannelCode())) {
@@ -148,9 +150,9 @@ public class BaseUtil {
             Objects.requireNonNull(withrawalDto.getTranxRef());
             Objects.requireNonNull(withrawalDto.getTranxType());
             Objects.requireNonNull(withrawalDto.getChannelCode());
-            Objects.requireNonNull(withrawalDto.getTranxCrncy());
+            Objects.requireNonNull(withrawalDto.getCurrency());
             Objects.requireNonNull(withrawalDto.getVerificationCode());
-            Currency currency = Currency.getInvestmentPlan(withrawalDto.getTranxCrncy());
+            Currency currency = Currency.getInvestmentPlan(withrawalDto.getCurrency());
             log.info("Currency: " + currency);
             log.info("::: Satisfied requestBody: [{}] :::", withrawalDto);
             return true;
@@ -194,6 +196,7 @@ public class BaseUtil {
 
     public static boolean isRequestSatisfied(InvestmentmentDto investmentmentDto) {
         log.info("::: In Investment payload validation.....");
+
         try {
 
             Objects.requireNonNull(investmentmentDto.getIban());

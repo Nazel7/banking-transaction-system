@@ -18,11 +18,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-@Deprecated
 @Slf4j
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class InvestmentActivationScript implements SchdeduleJob {
+public class InvestmentJOOQActivationScript implements SchdeduleJob {
 
     private final InvestmentRepo investmentRepo;
     private final ApplicationEventPublisher mEventPublisher;

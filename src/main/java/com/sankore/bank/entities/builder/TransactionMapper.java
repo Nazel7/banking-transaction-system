@@ -6,6 +6,7 @@ import com.sankore.bank.entities.models.TransactionModel;
 import com.sankore.bank.dtos.response.Transaction;
 import com.sankore.bank.dtos.request.TransferDto;
 import com.sankore.bank.enums.TransType;
+import com.sankore.bank.tables.records.TransactionsRecord;
 
 public class TransactionMapper {
 
@@ -18,7 +19,7 @@ public class TransactionMapper {
                 .paymentReference(transferDto.getPaymentReference())
                 .benefAccountNo(transferDto.getBenefAccountNo())
                 .debitAccountNo(transferDto.getDebitAccountNo())
-                .tranCrncy(transferDto.getTranCrncy())
+                .currency(transferDto.getTranCrncy())
                 .tranType(transferDto.getTranType())
                 .userToken(token)
                 .tranNarration(transferDto.getTranNarration())
@@ -35,7 +36,7 @@ public class TransactionMapper {
                 .tranxRef(withrawalDto.getTranxRef())
                 .benefAccountNo(withrawalDto.getIban())
                 .debitAccountNo(withrawalDto.getIban())
-                .tranCrncy(withrawalDto.getTranxCrncy())
+                .currency(withrawalDto.getCurrency())
                 .tranType(withrawalDto.getTranxType().equals(TransType.WITHDRAWAL.name()) ?
                         withrawalDto.getTranxType(): TransType.WITHDRAWAL.name())
                 .userToken(token)
@@ -50,7 +51,7 @@ public class TransactionMapper {
                 .tranxRef(liquidateDto.getTranxRef())
                 .benefAccountNo(liquidateDto.getIban())
                 .debitAccountNo(liquidateDto.getIban())
-                .tranCrncy(liquidateDto.getTranxCrncy())
+                .currency(liquidateDto.getTranxCrncy())
                 .tranType(!liquidateDto.getTranxType().equals(TransType.LIQUIDATE.name()) ?
                         TransType.LIQUIDATE.name(): liquidateDto.getTranxType())
                 .userToken(token)
@@ -68,11 +69,12 @@ public class TransactionMapper {
                 .tranxRef(topupDto.getTranxRef())
                 .benefAccountNo(topupDto.getIban())
                 .debitAccountNo(topupDto.getIban())
-                .tranCrncy(topupDto.getTrnaxCrcy())
+                .currency(topupDto.getCurrency())
                 .tranType(topupDto.getTranxType())
                 .userToken(token)
                 .tranNarration(topupDto.getTranxNaration())
                 .channelCode(topupDto.getChannelCode())
+                .amount(topupDto.getAmount())
                 .build();
     }
 
@@ -86,10 +88,32 @@ public class TransactionMapper {
                 .benefAccountNo(transactionModel.getBenefAccountNo())
                 .debitAccountNo(transactionModel.getDebitAccountNo())
                 .tranxRef(transactionModel.getTranxRef())
-                .tranCrncy(transactionModel.getTranCrncy())
+                .tranCrncy(transactionModel.getCurrency())
                 .tranType(transactionModel.getTranType())
                 .tranNarration(transactionModel.getTranNarration())
                 .userId(transactionModel.getUserId())
                 .build();
+    }
+
+
+    public static TransactionsRecord mapLogModelToRecord(TransactionModel transactionModel) {
+
+        TransactionsRecord transactionsRecord = new TransactionsRecord();
+        transactionsRecord.setAmount(transactionModel.getAmount());
+        transactionsRecord.setStatus(transactionModel.getStatus());
+        transactionsRecord.setBenefAccountNo(transactionModel.getBenefAccountNo());
+        transactionsRecord.setDebitAccountNo(transactionModel.getDebitAccountNo());
+        transactionsRecord.setPaymentReference(transactionModel.getPaymentReference());
+        transactionsRecord.setTranCrncy(transactionModel.getCurrency());
+        transactionsRecord.setChannelCode(transactionModel.getChannelCode());
+        transactionsRecord.setTranNarration(transactionModel.getTranNarration());
+        transactionsRecord.setTranType(transactionModel.getTranType());
+        transactionsRecord.setTranxRef(transactionModel.getTranxRef());
+        transactionsRecord.setUserToken(transactionModel.getUserToken());
+        transactionsRecord.setUserId(transactionModel.getUserId());
+        transactionsRecord.setIsLiquidate(transactionModel.getIsLiquidate());
+        transactionsRecord.setLiquidityApproval(transactionModel.getLiquidityApproval());
+
+        return transactionsRecord;
     }
 }

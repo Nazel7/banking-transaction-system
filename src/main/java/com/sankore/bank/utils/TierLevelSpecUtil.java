@@ -3,10 +3,9 @@ package com.sankore.bank.utils;
 
 import com.sankore.bank.entities.models.UserModel;
 import com.sankore.bank.enums.TierLevel;
+import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
-
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class TierLevelSpecUtil {
@@ -54,26 +53,13 @@ public class TierLevelSpecUtil {
             if (userModel.getVerifiedEmail() && userModel.getVerifiedBvn() ||
                     userModel.getVerifiedPhone() && userModel.getVerifiedBvn()) {
 
-                log.info("::: Account with Iban: [{}] is [{}] verified :::",
-                        userModel.getAccount().getIban(),
-                        TierLevelConstant.LEVEL_ONE);
-
                 return true;
             }
-
-            log.error("::: Account with Iban: [{}] is not [{}] verified",
-                    userModel.getAccount().getIban(),
-                    TierLevelConstant.LEVEL_ONE
-            );
 
             return false;
 
         } catch (NullPointerException ex) {
             ex.printStackTrace();
-            log.error("::: Account with Iban: [{}] is not [{}] verified",
-                    userModel.getAccount().getIban(),
-                    TierLevelConstant.LEVEL_ONE
-            );
 
             return false;
         }
@@ -82,28 +68,11 @@ public class TierLevelSpecUtil {
     private static Boolean isLevelTwoSatisfied(UserModel userModel) {
 
         try {
-            if (userModel.getVerifiedEmail() && userModel.getVerifiedPhone() && userModel.getVerifiedBvn()) {
-
-                log.info("::: Account with Iban: [{}] is [{}] verified :::",
-                         userModel.getAccount().getIban(),
-                        TierLevelConstant.LEVEL_TWO);
-
-                return true;
-            }
-
-            log.error("::: Account with Iban: [{}] is not [{}] verified",
-                      userModel.getAccount().getIban(),
-                    TierLevelConstant.LEVEL_TWO
-                     );
-
-            return false;
+            return userModel.getVerifiedEmail() && userModel.getVerifiedPhone() && userModel.getVerifiedBvn() &&
+                    !userModel.getVerifiedHomeAddress() && userModel.getHomeAddress() == null;
 
         } catch (NullPointerException ex) {
             ex.printStackTrace();
-            log.error("::: Account with Iban: [{}] is not [{}] verified",
-                      userModel.getAccount().getIban(),
-                    TierLevelConstant.LEVEL_TWO
-                     );
 
             return false;
         }
@@ -112,47 +81,28 @@ public class TierLevelSpecUtil {
     private static Boolean isLevelThreeSatisfied(UserModel userModel) {
 
         try {
-            if (isLevelTwoSatisfied(userModel) && userModel.getHomeAddress() != null && userModel.getVerifiedHomeAddress()) {
-
-                log.info("::: Account with Iban: [{}] is [{}] verified :::",
-                         userModel.getAccount().getIban(),
-                        TierLevelConstant.LEVEL_THREE);
-
-                return true;
-
-            }
-
-            log.error("::: Account with Iban: [{}] is not [{}] verified",
-                      userModel.getAccount().getIban(),
-                    TierLevelConstant.LEVEL_THREE
-                     );
-
-            return false;
+            return userModel.getVerifiedEmail() && userModel.getVerifiedPhone() && userModel.getVerifiedBvn() &&
+                    userModel.getHomeAddress() != null && userModel.getVerifiedHomeAddress();
 
         } catch (NullPointerException ex) {
             ex.printStackTrace();
-            log.error("::: Account with Iban: [{}] is not [{}] verified",
-                      userModel.getAccount().getIban(),
-                    TierLevelConstant.LEVEL_THREE
-                     );
 
             return false;
         }
     }
 
-    public static String getLevel(UserModel userModel){
+    public static String getLevel(UserModel userModel) {
 
 
-        if (userModel.getVerifiedPhone() && userModel.getVerifiedEmail() && userModel.getVerifiedBvn()){
+        if (userModel.getVerifiedPhone() && userModel.getVerifiedEmail() && userModel.getVerifiedBvn() &&
+                !userModel.getVerifiedHomeAddress() && userModel.getHomeAddress() == null) {
 
             return TierLevelConstant.LEVEL_TWO;
-        }
-        else if(userModel.getVerifiedPhone() && userModel.getVerifiedEmail() &&
-                userModel.getVerifiedBvn() && userModel.getVerifiedHomeAddress()){
+        } else if (userModel.getVerifiedPhone() && userModel.getVerifiedEmail() &&
+                userModel.getVerifiedBvn() && userModel.getVerifiedHomeAddress() && userModel.getHomeAddress() != null) {
 
             return TierLevelConstant.LEVEL_THREE;
-        }
-        else {
+        } else {
 
             return TierLevelConstant.LEVEL_ONE;
         }

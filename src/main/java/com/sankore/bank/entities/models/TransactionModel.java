@@ -8,13 +8,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import javax.persistence.Access;
-import javax.persistence.AccessType;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import lombok.experimental.Tolerate;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -36,11 +30,16 @@ public class TransactionModel {
     private BigDecimal amount;
     private String benefAccountNo;
     private String debitAccountNo;
+
+    @Column(unique = true, length = 30)
     private String paymentReference;
-    private String tranCrncy;
+
+    private String currency;
     private String channelCode;
     private String tranNarration;
     private String tranType;
+
+    @Column(unique = true, length = 30)
     private String tranxRef;
     private String userToken;
     private Long userId;

@@ -1,14 +1,21 @@
 package com.sankore.bank.crons;
 
+import com.sankore.bank.Tables;
+import com.sankore.bank.entities.builder.InvestmentMapper;
+import com.sankore.bank.entities.builder.UserMapper;
 import com.sankore.bank.entities.models.InvestmentModel;
+import com.sankore.bank.entities.models.UserModel;
 import com.sankore.bank.enums.InvestmentPlan;
-import com.sankore.bank.enums.TransType;
 import com.sankore.bank.enums.TranxStatus;
 import com.sankore.bank.repositories.InvestmentRepo;
+import com.sankore.bank.tables.records.CustomersRecord;
+import com.sankore.bank.tables.records.InvestmentModelRecord;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.support.PagedListHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,15 +25,17 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
-@Deprecated
 @Slf4j
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class InvestmentScript implements SchdeduleJob {
+public class InvestmentJOOQScript implements SchdeduleJob {
 
     private final InvestmentRepo investmentRepo;
+    private final DSLContext dslContext;
 
     @Value("${page.custom-size}")
     private int customSize;
@@ -48,19 +57,38 @@ public class InvestmentScript implements SchdeduleJob {
             Page<InvestmentModel> investmentModels =
                     investmentRepo.findByStatusAndPlan(status,
                             invPlan, pageable);
+            List<InvestmentModelRecord> investmentModelRecords =
+                    dslContext.selectFrom(Tables.INVESTMENT_MODEL)
+                            .where(Tables.INVESTMENT_MODEL.STATUS.eq(status)
+                                    .and(Tables.INVESTMENT_MODEL.PLAN.eq(invPlan)))
+                            .fetchInto(Tables.INVESTMENT_MODEL);
 
-            if (investmentModels.getContent().isEmpty()) {
+            if (investmentModelRecords.size() < 1) {
                 return;
             }
 
+            // Map list of InvestmentRecord into Model
+            List<InvestmentModel> investmentModelList = new ArrayList<>();
+            for (InvestmentModelRecord record: investmentModelRecords) {
+                CustomersRecord customersRecord = dslContext.fetchOne(Tables.CUSTOMERS,
+                        Tables.CUSTOMERS.ID.eq(record.getId()));
+                assert customersRecord != null;
+                UserModel userModel = UserMapper.mapRecordToModel(customersRecord);
+                final InvestmentModel investmentModel =
+                        InvestmentMapper.mapRecordToModel(record, userModel);
+                investmentModelList.add(investmentModel);
+            }
+
+            PagedListHolder<InvestmentModel> pagedListHolder =
+                    new PagedListHolder<>(investmentModelList);
+            pagedListHolder.setPageSize(customSize);
+
             log.info("::: About to process open investment from DB...");
-            for (int i = 0; i <= investmentModels.getTotalPages(); i++) {
+            for (int i = 0; i <= pagedListHolder.getPageCount(); i++) {
+                pagedListHolder.setPage(i);
+                System.out.println("::: PageList: " + pagedListHolder.getPageList());
 
-                pageable = PageRequest.of(i, customSize);
-                investmentModels =
-                        investmentRepo.findByStatusAndPlan(status, invPlan, pageable);
-
-                for (InvestmentModel investmentModel : investmentModels.getContent()) {
+                for (InvestmentModel investmentModel : pagedListHolder.getPageList()) {
 
                     if (investmentModel.getEndDate().getTime() > (System.currentTimeMillis())) {
                         // Calculate Daily Interest
@@ -82,6 +110,8 @@ public class InvestmentScript implements SchdeduleJob {
                             log.info("Daily Profit Accrued error...");
                             throw new RuntimeException("Daily Profit Accrued error. Date: " + new Date());
                         }
+                        int investmentProcessResponse =
+                                dslContext.update(Tables.INVESTMENT_MODEL).set(Tables.INVESTMENT_MODEL.ACCRUED_BALANCE)
                         accruedIntModel = investmentRepo.save(accruedIntModel);
 
                         log.info("::: Daily accrued interest is successful with payload: [{}]", accruedIntModel);

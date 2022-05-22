@@ -2,7 +2,6 @@ package com.sankore.bank.entities.models;
 
 import com.sankore.bank.utils.TransactionObjFormatter;
 import lombok.*;
-import lombok.experimental.Tolerate;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -49,6 +48,7 @@ public class InvestmentModel {
     private String middleName;
     private String bankCode;
     private String plan;
+    @Column(unique = true, length = 30)
     private String investmentRefNo;
     private Date startDate;
     private Date endDate;
@@ -62,11 +62,6 @@ public class InvestmentModel {
     @UpdateTimestamp
     private Date updatedAt;
 
-    @Tolerate
-    public InvestmentModel() {
-        this.investedAmount = new BigDecimal("0.00");
-    }
-
     public InvestmentModel(BigDecimal investedAmount, BigDecimal accruedBalance,
                            Double intRateMonth, Double intRateYear) {
 
@@ -74,6 +69,10 @@ public class InvestmentModel {
         this.investedAmount = investedAmount;
         this.intRateMonth = intRateMonth;
         this.intRateYear = intRateYear;
+
+    }
+
+    public InvestmentModel() {
 
     }
 
@@ -90,34 +89,40 @@ public class InvestmentModel {
         return this;
     }
 
+    // TODO: add to currently open investment
     public InvestmentModel topUpInvestment(BigDecimal topUpAmount, String investmentRefNo) {
         if (!investmentRefNo.equals(this.investmentRefNo)) {
             throw new RuntimeException("Error accessing investment, Iban is not owned");
         }
-        this.investedAmount = investedAmount.add(topUpAmount);
+        this.investedAmount = investedAmount.add(topUpAmount, new MathContext(4));
 
         return this;
     }
 
+    //TODO: Transfer accrued Interest to savings account
     public BigDecimal tranferAccruedInterest(BigDecimal interestAmount, String investmentRefNo) {
         if (!investmentRefNo.equals(this.investmentRefNo)) {
             throw new RuntimeException("Error accessing investment, Iban is not owned");
         }
         BigDecimal currentInterestAccrued = this.accruedBalance.subtract(investedAmount);
         if (currentInterestAccrued.compareTo(interestAmount) > 0) {
-            this.accruedBalance = this.accruedBalance.subtract(interestAmount);
+            this.accruedBalance = this.accruedBalance.subtract(interestAmount, new MathContext(4));
             return interestAmount;
         } else {
             throw new RuntimeException("Not a valid amount for profit withdrawal");
         }
     }
 
-
+    //TODO: extend Investemt CLOSE date to continue with the currently running investment.
     public InvestmentModel extendInvestment(String extentionDate) throws ParseException {
-        final Date date = TransactionObjFormatter.getDate(extentionDate);
-        this.setEndDate(date);
-
-        return this;
+        Date date = TransactionObjFormatter.getDate(extentionDate);
+        if (this.getEndDate().getTime() < date.getTime()) {
+            this.setEndDate(date);
+            return this;
+        }
+        else {
+            throw new RuntimeException("Not a valid extension Date for investment");
+        }
     }
 
     public InvestmentModel doAccruedInterest(BigDecimal dailyAccruedAmount) throws ParseException {
@@ -142,10 +147,5 @@ public class InvestmentModel {
         return Objects.equals(iban, investmentModel.iban);
     }
 
-    @Override
-    public int hashCode() {
-
-        return Objects.hash(investedAmount, iban, createdAt);
-    }
 
 }
