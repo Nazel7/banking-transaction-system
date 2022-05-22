@@ -613,9 +613,14 @@ public class TransactionJOOQService {
 
             }
 
+            String open = TranxStatus.PENDING.name();
+            if (investedAmountModel.getStartDate().getTime() <= System.currentTimeMillis()) {
+                open = TranxStatus.OPEN.name();
+            }
             int invProccessedResponse = dslContext.update(Tables.INVESTMENT_MODEL)
                     .set(Tables.INVESTMENT_MODEL.USER_MODEL_INV_ID, accountModel.getUserModel().getId())
                     .set(Tables.INVESTMENT_MODEL.INVESTED_AMOUNT, investedAmountModel.getInvestedAmount())
+                    .set(Tables.INVESTMENT_MODEL.STATUS, open)
                     .where(BankAccount.BANK_ACCOUNT.ID.eq(accountRecord.getId()))
                     .execute();
             log.info("::: Investemnt is successful with response: [{}]", invProccessedResponse);
