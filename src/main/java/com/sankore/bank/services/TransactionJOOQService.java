@@ -138,8 +138,8 @@ public class TransactionJOOQService {
             transactionModel.setStatus(TranxStatus.SUCCESSFUL.name());
             TransactionsRecord existLogModelWithRef = dslContext.fetchOne(Tables.TRANSACTIONS,
                     Tables.TRANSACTIONS.TRANX_REF.eq(transferDto.getTranxRef()));
-            assert existLogModelWithRef != null;
-            if (existLogModelWithRef.getTranxRef().equalsIgnoreCase(transferDto.getTranxRef())) {
+
+            if (existLogModelWithRef != null) {
                 log.error("::: Duplicate error. LogModel already exist.");
                 throw new IllegalArgumentException("Duplicate error. LogModel already exist.");
             }
@@ -220,8 +220,7 @@ public class TransactionJOOQService {
             final TransactionModel transactionModel = TransactionMapper.mapToModel(topupDto, token);
             TransactionsRecord existLogModelWithRef = dslContext.fetchOne(Tables.TRANSACTIONS,
                     Tables.TRANSACTIONS.TRANX_REF.eq(topupDto.getTranxRef()));
-            assert existLogModelWithRef != null;
-            if (existLogModelWithRef.getTranxRef().equalsIgnoreCase(topupDto.getTranxRef())) {
+            if (existLogModelWithRef != null) {
                 log.error("::: Duplicate error. LogModel already exist.");
                 throw new IllegalArgumentException("Duplicate error. LogModel already exist.");
             }
@@ -368,8 +367,8 @@ public class TransactionJOOQService {
             final TransactionModel transactionModel = TransactionMapper.mapToModel(withrawalDto, token);
             TransactionsRecord existLogModelWithRef = dslContext.fetchOne(Tables.TRANSACTIONS,
                     Tables.TRANSACTIONS.TRANX_REF.eq(withrawalDto.getTranxRef()));
-            assert existLogModelWithRef != null;
-            if (existLogModelWithRef.getTranxRef().equalsIgnoreCase(withrawalDto.getTranxRef())) {
+
+            if (existLogModelWithRef != null) {
                 log.error("::: Duplicate error. LogModel already exist.");
                 throw new IllegalArgumentException("Duplicate error. LogModel already exist.");
             }
@@ -562,9 +561,6 @@ public class TransactionJOOQService {
                     dslContext.fetchOne(Tables.INVESTMENT_MODEL,
                             Tables.INVESTMENT_MODEL.STATUS.eq(TranxStatus.OPEN.name()),
                             Tables.INVESTMENT_MODEL.PLAN.eq(dto.getPlan()));
-
-            System.out.println("I AM HERE...");
-
 
             if (openInvestmentRecord != null) {
                 log.error("::: Your investment is currently Open on this Plan, please try order plans . Thank you");

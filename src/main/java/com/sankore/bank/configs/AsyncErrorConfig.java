@@ -17,7 +17,6 @@ import org.springframework.security.task.DelegatingSecurityContextAsyncTaskExecu
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class AsyncErrorConfig extends AsyncConfigurerSupport {
 
-
     private final AsyncExceptionHandler exceptionHandler;
 
     @Bean
@@ -34,11 +33,5 @@ public class AsyncErrorConfig extends AsyncConfigurerSupport {
     public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
         return exceptionHandler;
     }
-
-    @Bean
-    public DelegatingSecurityContextAsyncTaskExecutor taskExecutor(@Qualifier("getAsyncExecutor") ThreadPoolTaskExecutor delegate) {
-        return new DelegatingSecurityContextAsyncTaskExecutor(delegate);
-    }
-
 
 }
