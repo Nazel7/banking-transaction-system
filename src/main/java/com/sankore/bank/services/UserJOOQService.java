@@ -17,6 +17,7 @@ import com.sankore.bank.tables.records.CustomersRecord;
 import com.sankore.bank.tables.records.SecureUserRecord;
 import com.sankore.bank.utils.BaseUtil;
 import com.sankore.bank.utils.TierLevelSpecUtil;
+import com.sankore.bank.utils.TransactionObjFormatter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
@@ -41,7 +42,6 @@ public class UserJOOQService {
     @Value("${spring.application.bank-code}")
     private String bankCode;
 
-    @Transactional
     public User registerUser(final SignUpDto signUpDto) throws UserNotFoundException, NoSuchAlgorithmException {
         log.info("::: In registerUser.....");
 
@@ -54,7 +54,7 @@ public class UserJOOQService {
         UserModel userModel = upgradeSigningUpUser(userMapped);
         CustomersRecord customersRecord = UserMapper.mapModelToCustRecord(userModel);
 
-        customersRecord.setId(SecureRandom.getInstanceStrong().nextLong());
+        customersRecord.setId(TransactionObjFormatter.generateRandomNumVal(15));
         CustomersRecord savedCustomerRecord = dslContext.insertInto(Tables.CUSTOMERS)
                 .set(customersRecord)
                 .returning()
@@ -83,7 +83,7 @@ public class UserJOOQService {
 
         final SecureUserModel secureUserModel = UserMapper.mapToAuth(userModel, signUpDto);
         SecureUserRecord secureUserRecord = SecureUserMapper.mapModelToRecord(secureUserModel, customersRecord);
-        secureUserRecord.setId(SecureRandom.getInstanceStrong().nextLong());
+        secureUserRecord.setId(TransactionObjFormatter.generateRandomNumVal(15));
         SecureUserRecord savedSecureRecord = dslContext.insertInto(Tables.SECURE_USER)
                 .set(secureUserRecord)
                 .returning()

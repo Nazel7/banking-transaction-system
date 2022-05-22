@@ -102,7 +102,7 @@ public class UserMapper {
 
         return SecureUserModel
                 .builder()
-                .authority("ROLE_CUSTOMER")
+                .authority("ROLE_" + signUpDto.getAuthority())
                 .userModel(userModel)
                 .username(userModel.getEmail())
                 .password(passcode)

@@ -2,6 +2,7 @@ package com.sankore.bank.utils;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.security.SecureRandom;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -56,6 +57,22 @@ public class TransactionObjFormatter {
         Matcher dateMatcher = pattern.matcher(yourEmail);
 
         return dateMatcher.matches();
+
+    }
+
+    public static Long generateRandomNumVal(int size) {
+
+        SecureRandom random = new SecureRandom();
+        StringBuilder requestIdBuffer = new StringBuilder();
+        String[] requestIdArrayElement = new String[size];
+        String[] valueElement = {"0","1","2","3","4","5","6","7","8","9"};
+
+        for (int i=0; i < requestIdArrayElement.length; i++) {
+            requestIdBuffer.append(random.nextInt(valueElement.length));
+        }
+
+        System.out.println("ID: " + requestIdBuffer.toString());
+       return Long.parseLong(requestIdBuffer.toString());
 
     }
 
