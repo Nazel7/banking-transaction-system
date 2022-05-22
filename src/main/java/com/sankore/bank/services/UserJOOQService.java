@@ -37,7 +37,6 @@ import java.util.UUID;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class UserJOOQService {
 
-    private final UserRepo mUserRepo;
     private final DSLContext dslContext;
 
     @Value("${spring.application.bank-code}")
@@ -161,8 +160,6 @@ public class UserJOOQService {
 
 
     private UserModel findByUserId(Long userId) throws UserNotFoundException {
-
-        Optional<UserModel> modelOptional = mUserRepo.findById(userId);
 
         CustomersRecord record = dslContext.fetchOne(Tables.CUSTOMERS, Tables.CUSTOMERS.ID.eq(userId));
 

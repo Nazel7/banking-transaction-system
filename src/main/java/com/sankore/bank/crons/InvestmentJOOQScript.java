@@ -35,14 +35,12 @@ import java.util.List;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class InvestmentJOOQScript implements SchdeduleJob {
 
-    private final InvestmentRepo investmentRepo;
     private final DSLContext dslContext;
 
     @Value("${page.custom-size}")
     private int customSize;
 
-//    @Scheduled(cron = "${spring.application.investment-scheduler}")
-    @Scheduled(cron = "*/5 * * * * *")
+    @Scheduled(cron = "${spring.application.investment-scheduler}")
     @Override
     public void run() {
 

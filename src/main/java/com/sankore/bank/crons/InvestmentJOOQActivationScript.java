@@ -36,7 +36,6 @@ import java.util.List;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class InvestmentJOOQActivationScript implements SchdeduleJob {
 
-    private final InvestmentRepo investmentRepo;
     private final DSLContext dslContext;
     private final ApplicationEventPublisher mEventPublisher;
 
