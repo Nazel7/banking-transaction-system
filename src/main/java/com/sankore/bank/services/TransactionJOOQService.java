@@ -235,7 +235,6 @@ public class TransactionJOOQService {
             assert crediAccountRecord != null;
             AccountModel accountModel = getAccountModel(crediAccountRecord);
 
-
             log.info("::: About to validate Account owner.....");
             String userName = jwtUtil.extractUsername(token);
             System.out.println("JwtUser: " + userName);
@@ -246,8 +245,6 @@ public class TransactionJOOQService {
             }
 
             AccountModel topedAccount = accountModel.deposit(topupDto.getAmount());
-            topedAccount.setIsLiquidityApproval(false);
-            topedAccount.setIsLiquidated(false);
             int updatedCreditResponse = dslContext.update(BankAccount.BANK_ACCOUNT)
                     .set(Tables.BANK_ACCOUNT.BALANCE, topedAccount.getBalance())
                     .set(Tables.BANK_ACCOUNT.IS_LIQUIDATED, false)
@@ -653,9 +650,5 @@ public class TransactionJOOQService {
         }
 
     }
-
-    //TODO: TopUp OPEN Investment
-    //TODO: Withdraw ACCRUED_INTEREST on Investment
-    //TODO: Extend Investment
 
 }

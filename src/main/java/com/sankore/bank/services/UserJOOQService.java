@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -36,13 +37,12 @@ import java.util.UUID;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class UserJOOQService {
 
-    private final UserRepo mUserRepo;
     private final DSLContext dslContext;
 
     @Value("${spring.application.bank-code}")
     private String bankCode;
 
-    public User registerUser(final SignUpDto signUpDto) throws UserNotFoundException, NoSuchAlgorithmException {
+    public User registerUser(final SignUpDto signUpDto) throws UserNotFoundException {
         log.info("::: In registerUser.....");
 
         if (!BaseUtil.isRequestSatisfied(signUpDto)) {
@@ -160,8 +160,6 @@ public class UserJOOQService {
 
 
     private UserModel findByUserId(Long userId) throws UserNotFoundException {
-
-        Optional<UserModel> modelOptional = mUserRepo.findById(userId);
 
         CustomersRecord record = dslContext.fetchOne(Tables.CUSTOMERS, Tables.CUSTOMERS.ID.eq(userId));
 

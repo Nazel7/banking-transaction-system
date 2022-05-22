@@ -30,7 +30,7 @@ public class AccountMapper {
                 .iban(model.getIban())
                 .balance(model.getBalance().doubleValue())
                 .status(tranxStatus ==  null ? TranxStatus.PENDING.name(): tranxStatus)
-                .updatedAt(model.getUpdatedAt())
+                .updatedAt(new Date())
                 .build();
     }
 

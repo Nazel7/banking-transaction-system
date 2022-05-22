@@ -83,7 +83,7 @@ public class AccountModel {
         if (this.balance == null) {
             this.balance = new BigDecimal("0.00");
         }
-       this.balance = this.balance.add(amount, new MathContext(4));
+       this.balance = this.balance.add(amount);
 
         return this;
     }
