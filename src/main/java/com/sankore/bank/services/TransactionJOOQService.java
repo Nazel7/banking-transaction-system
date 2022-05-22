@@ -514,7 +514,7 @@ public class TransactionJOOQService {
             notificationLog.setInitiator(userModelMinRecord.getFirstName().concat(" ")
                     .concat(userModelMinRecord.getLastName()));
             notificationLog.setEventType(TransType.LIQUIDATE.name());
-            notificationLog.setChannelCode(ChannelConsts.VENDOR_CHANNEL);
+            notificationLog.setChannelCode(liquidateDto.getChannelCode());
             notificationLog.setTranxDate(new Date());
             notificationLog.setTranxRef(liquidateDto.getTranxRef());
 
@@ -636,7 +636,7 @@ public class TransactionJOOQService {
             notificationLog.setInitiator(accountModel.getUserModel().getFirstName().concat(" ")
                     .concat(accountModel.getUserModel().getLastName()));
             notificationLog.setEventType(TransType.INVESTMENT.name());
-            notificationLog.setChannelCode(ChannelConsts.VENDOR_CHANNEL);
+            notificationLog.setChannelCode(dto.getBankCode());
             notificationLog.setTranxDate(investedAmountModel.getCreatedAt());
             notificationLog.setTranxRef(investedAmountModel.getInvestmentRefNo());
 
