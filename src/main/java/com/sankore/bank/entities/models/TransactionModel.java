@@ -31,7 +31,7 @@ public class TransactionModel {
     private String benefAccountNo;
     private String debitAccountNo;
 
-    @Column(unique = true)
+    @Column(unique = true, length = 30)
     private String paymentReference;
 
     private String tranCrncy;
@@ -39,7 +39,7 @@ public class TransactionModel {
     private String tranNarration;
     private String tranType;
 
-    @Column(unique = true)
+    @Column(unique = true, length = 30)
     private String tranxRef;
     private String userToken;
     private Long userId;

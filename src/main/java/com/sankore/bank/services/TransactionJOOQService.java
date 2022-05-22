@@ -141,6 +141,14 @@ public class TransactionJOOQService {
                 log.error("Transfer verificationCode failed.....");
                 throw new IllegalAccessException("Access denied for Invalid verificationCode");
             }
+            transactionModel.setStatus(TranxStatus.SUCCESSFUL.name());
+            TransactionsRecord existLogModelWithRef = dslContext.fetchOne(Tables.TRANSACTIONS,
+                    Tables.TRANSACTIONS.TRANX_REF.eq(transferDto.getTranxRef()));
+            assert existLogModelWithRef != null;
+            if (existLogModelWithRef.getTranxRef().equalsIgnoreCase(transferDto.getTranxRef())) {
+                log.error("::: Duplicate error. LogModel already exist.");
+                throw new IllegalArgumentException("Duplicate error. LogModel already exist.");
+            }
 
             final AccountModel debitedAccountProcess = debitAccountModel.withdraw(transferDto.getAmount());
             int updatedResponse = dslContext.update(BankAccount.BANK_ACCOUNT)
@@ -161,17 +169,10 @@ public class TransactionJOOQService {
             log.info("::: Account has been debited with iban: [{}]", debitedAccountProcess.getIban());
             log.info("::: Account has been credited with iban: [{}] ", creditedAccountProcess.getIban());
             log.info(mMessageConfig.getTransfer_successful());
-            transactionModel.setStatus(TranxStatus.SUCCESSFUL.name());
-            TransactionModel savedTransaction = mTransactionRepo.save(transactionModel);
-            TransactionsRecord existLogModelWithRef = dslContext.fetchOne(Tables.TRANSACTIONS,
-                    Tables.TRANSACTIONS.TRANX_REF.eq(transferDto.getTranxRef()));
-            if (existLogModelWithRef != null) {
-                log.error("::: Duplicate error. LogModel already exist.");
-            }
             final TransactionsRecord transactionsRecord =
                     TransactionMapper.mapLogModelToRecord(transactionModel);
-
-
+            dslContext.attach(transactionsRecord);
+            transactionsRecord.store();
             log.info("::: FundTransfer LogModel audited successfully");
 
             receipient.setEmail(creditAccountModel.getUserModel().getEmail());
@@ -187,7 +188,7 @@ public class TransactionJOOQService {
             notificationLog.setData(data);
             notificationLog.setTranxRef(transferDto.getTranxRef());
             notificationLog.setChannelCode(transferDto.getChannelCode());
-            notificationLog.setTranxDate(savedTransaction.getPerformedAt());
+            notificationLog.setTranxDate(transactionModel.getPerformedAt());
 
             notificationLog.setEventType(TransType.TRANSFER.name());
             String name = sender.getFirstName().concat(" ").concat(sender.getLastName());
@@ -199,7 +200,7 @@ public class TransactionJOOQService {
             log.info("::: notification sent to recipient: [{}] DB locator :::",
                     notificationLogEvent.getNotificationLog());
 
-            return TransactionMapper.mapToDomain(savedTransaction);
+            return TransactionMapper.mapToDomain(transactionModel);
 
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -223,6 +224,13 @@ public class TransactionJOOQService {
             DataInfo data = new DataInfo();
             boolean isRequestValid = BaseUtil.isRequestSatisfied(topupDto);
             final TransactionModel transactionModel = TransactionMapper.mapToModel(topupDto, token);
+            TransactionsRecord existLogModelWithRef = dslContext.fetchOne(Tables.TRANSACTIONS,
+                    Tables.TRANSACTIONS.TRANX_REF.eq(topupDto.getTranxRef()));
+            assert existLogModelWithRef != null;
+            if (existLogModelWithRef.getTranxRef().equalsIgnoreCase(topupDto.getTranxRef())) {
+                log.error("::: Duplicate error. LogModel already exist.");
+                throw new IllegalArgumentException("Duplicate error. LogModel already exist.");
+            }
 
             if (!isRequestValid) {
                 log.error("::: TopUp request error with payload: [{}]", topupDto);
@@ -248,11 +256,20 @@ public class TransactionJOOQService {
             AccountModel topedAccount = accountModel.deposit(topupDto.getAmount());
             topedAccount.setIsLiquidityApproval(false);
             topedAccount.setIsLiquidated(false);
-            mAccountRepo.save(topedAccount);
+            int updatedCreditResponse = dslContext.update(BankAccount.BANK_ACCOUNT)
+                    .set(Tables.BANK_ACCOUNT.BALANCE, topedAccount.getBalance())
+                    .set(Tables.BANK_ACCOUNT.IS_LIQUIDATED, false)
+                    .set(Tables.BANK_ACCOUNT.IS_LIQUIDITY_APPROVAL, false)
+                    .where(BankAccount.BANK_ACCOUNT.ID.eq(topedAccount.getId()))
+                    .execute();
+            log.info("::: FundAccount is successful with response [{}]", updatedCreditResponse);
 
             transactionModel.setStatus(TranxStatus.SUCCESSFUL.name());
-            TransactionModel savedLogModel = mTransactionRepo.save(transactionModel);
-            log.info("::: FundAccount LogModel audited successfully with paylaod: [{}]", savedLogModel);
+            final TransactionsRecord transactionsRecord =
+                    TransactionMapper.mapLogModelToRecord(transactionModel);
+            dslContext.attach(transactionsRecord);
+            transactionsRecord.store();
+            log.info("::: FundAccount LogModel audited successfully with paylaod: [{}]", transactionModel);
 
             String notificationMessage =
                     String.format("Your account %s has been credit with sum of [%s%s] only ",
@@ -292,8 +309,7 @@ public class TransactionJOOQService {
 
         assert customersRecord != null;
         UserModel userModelMinRecord = UserMapper.mapRecordToModel(customersRecord);
-        AccountModel accountModel = AccountMapper.mapRecordToModel(crediAccountRecord, userModelMinRecord);
-        return accountModel;
+        return AccountMapper.mapRecordToModel(crediAccountRecord, userModelMinRecord);
     }
 
     public Account doFundWithdrawal(WithrawalDto withrawalDto, HttpServletRequest request) throws TransferNotValidException {
@@ -356,6 +372,15 @@ public class TransactionJOOQService {
             }
 
             final TransactionModel transactionModel = TransactionMapper.mapToModel(withrawalDto, token);
+            TransactionsRecord existLogModelWithRef = dslContext.fetchOne(Tables.TRANSACTIONS,
+                    Tables.TRANSACTIONS.TRANX_REF.eq(withrawalDto.getTranxRef()));
+            assert existLogModelWithRef != null;
+            if (existLogModelWithRef.getTranxRef().equalsIgnoreCase(withrawalDto.getTranxRef())) {
+                log.error("::: Duplicate error. LogModel already exist.");
+                throw new IllegalArgumentException("Duplicate error. LogModel already exist.");
+            }
+
+
             if (!userModel.getVerificationCode().equals(withrawalDto.getVerificationCode())) {
                 log.error("::: Account broken, Invalid access...");
                 throw new IllegalAccessException("Account broken, Invalid access");
@@ -370,8 +395,11 @@ public class TransactionJOOQService {
             log.info("::: Account debit updated successfully with response: [{}]", updatedResponse);
 
             transactionModel.setStatus(TranxStatus.SUCCESSFUL.name());
-            TransactionModel savedLogModel = mTransactionRepo.save(transactionModel);
-            log.info("::: FundWithdrawal LogModel audited successfully with paylaod: [{}]", savedLogModel);
+            final TransactionsRecord transactionsRecord =
+                    TransactionMapper.mapLogModelToRecord(transactionModel);
+            dslContext.attach(transactionsRecord);
+            transactionsRecord.store();
+            log.info("::: FundAccount LogModel audited successfully with paylaod: [{}]", transactionModel);
 
             String notificationMessage =
                     String.format("Your account %s has been debited with sum of [%s%s] only ",
@@ -446,6 +474,16 @@ public class TransactionJOOQService {
             }
 
             final TransactionModel transactionModel = TransactionMapper.mapToModel(liquidateDto, token);
+
+            TransactionsRecord existLogModelWithRef = dslContext.fetchOne(Tables.TRANSACTIONS,
+                    Tables.TRANSACTIONS.TRANX_REF.eq(liquidateDto.getTranxRef()));
+            assert existLogModelWithRef != null;
+            if (existLogModelWithRef.getTranxRef().equalsIgnoreCase(liquidateDto.getTranxRef())) {
+                log.error("::: Duplicate error. LogModel already exist.");
+                throw new IllegalArgumentException("Duplicate error. LogModel already exist.");
+            }
+
+
             if (!customersRecord.getVerificationCode().equals(liquidateDto.getVerificationCode())) {
                 log.error("::: Account broken, Invalid access...");
                 throw new IllegalAccessException("Account broken, Invalid access");
@@ -473,9 +511,11 @@ public class TransactionJOOQService {
             log.info("::: Account liquidity updated successfully with response: [{}]", updatedResponse);
 
             transactionModel.setStatus(TranxStatus.SUCCESSFUL.name());
-            TransactionModel savedLogModel = mTransactionRepo.save(transactionModel);
-            log.info("::: FundWithdrawal LogModel audited successfully with paylaod: [{}]", savedLogModel);
-
+            final TransactionsRecord transactionsRecord =
+                    TransactionMapper.mapLogModelToRecord(transactionModel);
+            dslContext.attach(transactionsRecord);
+            transactionsRecord.store();
+            log.info("::: FundAccount LogModel audited successfully with paylaod: [{}]", transactionModel);
             String notificationMessage =
                     String.format("Your account %s has been liquidated with account total sum of [%s%s] only ",
                             debitedAccount.getIban(),
@@ -536,7 +576,14 @@ public class TransactionJOOQService {
                 log.error("::: Your investment is currently Open on this Plan, please try order plans . Thank you");
                 throw new RuntimeException("Your investment is currently Open on this Plan, please try order plans ");
             }
+            // Check for exisitInvestmentRef
+            final InvestmentModelRecord existInvestmentRecord = dslContext.fetchOne(Tables.INVESTMENT_MODEL,
+                    Tables.INVESTMENT_MODEL.INVESTMENT_REF_NO.eq(dto.getTranxRef()));
 
+            assert existInvestmentRecord != null;
+            if (existInvestmentRecord.getInvestmentRefNo().equalsIgnoreCase(dto.getTranxRef())) {
+                throw new IllegalArgumentException("Duplicate transaction error.");
+            }
             String userName = jwtUtil.extractUsername(token);
 
             final BankAccountRecord accountRecord = dslContext.fetchOne(BankAccount.BANK_ACCOUNT,

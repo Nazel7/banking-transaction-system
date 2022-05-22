@@ -48,7 +48,7 @@ public class InvestmentModel {
     private String middleName;
     private String bankCode;
     private String plan;
-    @Column(unique = true)
+    @Column(unique = true, length = 30)
     private String investmentRefNo;
     private Date startDate;
     private Date endDate;
