@@ -30,7 +30,7 @@ public class UserController {
     @PostMapping("/signup")
     @ApiOperation(value = "::: createUser :::", notes = "API for user creation with login credentials")
     public CompletableFuture<ResponseEntity<User>> createUser(@RequestBody SignUpDto signUpDto)
-            throws UserNotFoundException, NoSuchAlgorithmException {
+            throws UserNotFoundException {
 
         final User user = userJOOQService.registerUser(signUpDto);
 
