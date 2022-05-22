@@ -151,5 +151,11 @@ public class InvestmentModel {
         return Objects.equals(iban, investmentModel.iban);
     }
 
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(accruedBalance, iban, createdAt);
+    }
+
 
 }
