@@ -1,10 +1,14 @@
 package com.sankore.bank.crons;
 
 import com.sankore.bank.Tables;
+import com.sankore.bank.entities.builder.InvestmentMapper;
+import com.sankore.bank.entities.builder.UserMapper;
 import com.sankore.bank.entities.models.InvestmentModel;
+import com.sankore.bank.entities.models.UserModel;
 import com.sankore.bank.enums.InvestmentPlan;
 import com.sankore.bank.enums.TranxStatus;
 import com.sankore.bank.repositories.InvestmentRepo;
+import com.sankore.bank.tables.records.CustomersRecord;
 import com.sankore.bank.tables.records.InvestmentModelRecord;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -62,20 +66,27 @@ public class InvestmentJOOQScript implements SchdeduleJob {
             if (investmentModelRecords.size() < 1) {
                 return;
             }
+
+            // Map list of InvestmentRecord into Model
             List<InvestmentModel> investmentModelList = new ArrayList<>();
             for (InvestmentModelRecord record: investmentModelRecords) {
-
+                CustomersRecord customersRecord = dslContext.fetchOne(Tables.CUSTOMERS,
+                        Tables.CUSTOMERS.ID.eq(record.getId()));
+                assert customersRecord != null;
+                UserModel userModel = UserMapper.mapRecordToModel(customersRecord);
+                final InvestmentModel investmentModel =
+                        InvestmentMapper.mapRecordToModel(record, userModel);
+                investmentModelList.add(investmentModel);
             }
 
-
-
             PagedListHolder<InvestmentModel> pagedListHolder =
-                    new PagedListHolder<>(investmentModels.getContent());
+                    new PagedListHolder<>(investmentModelList);
             pagedListHolder.setPageSize(customSize);
 
             log.info("::: About to process open investment from DB...");
             for (int i = 0; i <= pagedListHolder.getPageCount(); i++) {
                 pagedListHolder.setPage(i);
+                System.out.println("::: PageList: " + pagedListHolder.getPageList());
 
                 for (InvestmentModel investmentModel : pagedListHolder.getPageList()) {
 
@@ -99,6 +110,8 @@ public class InvestmentJOOQScript implements SchdeduleJob {
                             log.info("Daily Profit Accrued error...");
                             throw new RuntimeException("Daily Profit Accrued error. Date: " + new Date());
                         }
+                        int investmentProcessResponse =
+                                dslContext.update(Tables.INVESTMENT_MODEL).set(Tables.INVESTMENT_MODEL.ACCRUED_BALANCE)
                         accruedIntModel = investmentRepo.save(accruedIntModel);
 
                         log.info("::: Daily accrued interest is successful with payload: [{}]", accruedIntModel);
