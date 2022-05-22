@@ -17,6 +17,8 @@ import javax.persistence.Column;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.Email;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 public class UserMapper {
@@ -148,6 +150,8 @@ public class UserMapper {
         record.setFirstName(model.getFirstName());
         record.setLastName(model.getLastName());
         record.setPin(model.getPin());
+        record.setCreatedAt(LocalDateTime.now());
+        record.setUpdatedAt(LocalDateTime.now());
 
         return record;
 

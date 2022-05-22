@@ -14,6 +14,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.UUID;
@@ -69,6 +70,8 @@ public class AccountMapper {
         record.setCurrency(accountRecord.getCurrency());
         record.setStatus(accountRecord.getStatus());
         record.setUserModelId(userModel.getId());
+        record.setCreatedAt(LocalDateTime.now());
+        record.setUpdatedAt(LocalDateTime.now());
 
         return record;
 
