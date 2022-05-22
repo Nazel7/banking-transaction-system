@@ -132,13 +132,6 @@ public class InvestmentJOOQActivationScript implements SchdeduleJob {
     public void closeInvestment() {
 
         try {
-            Pageable pageable = PageRequest.of(0, customSize);
-            Page<InvestmentModel> investmentModels =
-                    investmentRepo.findAll(pageable);
-
-            if (investmentModels.getContent().isEmpty()) {
-                return;
-            }
 
             final List<InvestmentModelRecord> investmentModelRecords =
                     dslContext.selectFrom(Tables.INVESTMENT_MODEL)
@@ -169,12 +162,17 @@ public class InvestmentJOOQActivationScript implements SchdeduleJob {
             log.info("::: About to process open investment from DB...");
             for (int i = 0; i <= pagedListHolder.getPageCount(); i++) {
                 pagedListHolder.setPage(i);
+                System.out.println("::: PageList: " + pagedListHolder.getPageList());
 
                 for (InvestmentModel investmentModel : pagedListHolder.getPageList()) {
                     log.info("::: About to DEACTIVATE Investment Account");
                     if (investmentModel.getEndDate().getTime() > System.currentTimeMillis()) {
-                        investmentModel.setStatus(TranxStatus.CLOSE.name());
-                        investmentModel = investmentRepo.save(investmentModel);
+                        int invProcessResponse = dslContext.update(Tables.INVESTMENT_MODEL)
+                                .set(Tables.INVESTMENT_MODEL.STATUS, TranxStatus.CLOSE.name())
+                                .set(Tables.INVESTMENT_MODEL.UPDATED_AT, LocalDateTime.now())
+                                .where(Tables.INVESTMENT_MODEL.ID.eq(investmentModel.getId()))
+                                .execute();
+                        log.info("::: Investment DEATIVATION successful, response: [{}]", invProcessResponse);
                         NotificationLog notificationLog = new NotificationLog();
                         DataInfo data = new DataInfo();
                         String notificationMessage =

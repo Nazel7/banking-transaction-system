@@ -43,7 +43,7 @@ public class UserJOOQService {
     @Value("${spring.application.bank-code}")
     private String bankCode;
 
-    public User registerUser(final SignUpDto signUpDto) throws UserNotFoundException, NoSuchAlgorithmException {
+    public User registerUser(final SignUpDto signUpDto) throws UserNotFoundException {
         log.info("::: In registerUser.....");
 
         if (!BaseUtil.isRequestSatisfied(signUpDto)) {
