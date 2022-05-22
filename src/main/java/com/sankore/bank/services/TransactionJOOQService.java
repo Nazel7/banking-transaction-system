@@ -5,7 +5,10 @@ import com.sankore.bank.auth.util.JwtUtil;
 import com.sankore.bank.configs.TranxMessageConfig;
 import com.sankore.bank.contants.ChannelConsts;
 import com.sankore.bank.dtos.request.*;
-import com.sankore.bank.dtos.response.*;
+import com.sankore.bank.dtos.response.Account;
+import com.sankore.bank.dtos.response.Investment;
+import com.sankore.bank.dtos.response.Transaction;
+import com.sankore.bank.dtos.response.TransferNotValidException;
 import com.sankore.bank.entities.builder.AccountMapper;
 import com.sankore.bank.entities.builder.InvestmentMapper;
 import com.sankore.bank.entities.builder.TransactionMapper;
@@ -20,10 +23,6 @@ import com.sankore.bank.event.notifcation.DataInfo;
 import com.sankore.bank.event.notifcation.NotificationLog;
 import com.sankore.bank.event.notifcation.NotificationLogEvent;
 import com.sankore.bank.event.notifcation.Receipient;
-import com.sankore.bank.repositories.AccountRepo;
-import com.sankore.bank.repositories.InvestmentRepo;
-import com.sankore.bank.repositories.TransactionRepo;
-import com.sankore.bank.repositories.UserRepo;
 import com.sankore.bank.tables.BankAccount;
 import com.sankore.bank.tables.Customers;
 import com.sankore.bank.tables.records.BankAccountRecord;
@@ -44,17 +43,12 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class TransactionJOOQService {
 
-    private final TransactionRepo mTransactionRepo;
-    private final AccountRepo mAccountRepo;
-    private final UserRepo mUserRepo;
-    private final InvestmentRepo mInvestmentRepo;
     private final ApplicationEventPublisher mEventPublisher;
     private final JwtUtil jwtUtil;
     private final DSLContext dslContext;
@@ -247,8 +241,8 @@ public class TransactionJOOQService {
             log.info("::: About to validate Account owner.....");
             String userName = jwtUtil.extractUsername(token);
             System.out.println("JwtUser: " + userName);
-            UserModel userModel = mUserRepo.findUserModelByEmail(userName);
-            if (userModel == null) {
+            CustomersRecord customersRecord = dslContext.fetchOne(Tables.CUSTOMERS, Tables.CUSTOMERS.EMAIL.eq(userName));
+            if (customersRecord == null) {
                 log.error("::: Account broken, Invalid Account access");
                 throw new IllegalAccessException("Account broken, Invalid Account access");
             }

@@ -27,16 +27,16 @@ public class TransactionObjFormatter {
         return dateString.substring(0, 7);
     }
 
-    public static boolean isMatchDateTime(String dateParam){
+    public static boolean isMatchDateTime(String dateParam) {
         Pattern pattern = Pattern.compile(DATE_MATCHER_TIME);
-        Matcher dateMatcher= pattern.matcher(dateParam);
+        Matcher dateMatcher = pattern.matcher(dateParam);
 
         return dateMatcher.matches();
     }
 
-    public static boolean isMatchDate(String dateParam){
+    public static boolean isMatchDate(String dateParam) {
         Pattern pattern = Pattern.compile(DATE_MATCHER);
-        Matcher dateMatcher= pattern.matcher(dateParam);
+        Matcher dateMatcher = pattern.matcher(dateParam);
 
         return dateMatcher.matches();
     }
@@ -44,7 +44,7 @@ public class TransactionObjFormatter {
     public static boolean isMatchNigerianPhoneNum(String phoneNum) {
 
         Pattern pattern = Pattern.compile(NGN_PHONE_NUM);
-        Matcher dateMatcher= pattern.matcher(phoneNum);
+        Matcher dateMatcher = pattern.matcher(phoneNum);
 
         return dateMatcher.matches();
 
@@ -53,13 +53,11 @@ public class TransactionObjFormatter {
     public static boolean isEmailMatch(String yourEmail) {
 
         Pattern pattern = Pattern.compile(EMAIL_FORMAT);
-        Matcher dateMatcher= pattern.matcher(yourEmail);
+        Matcher dateMatcher = pattern.matcher(yourEmail);
 
         return dateMatcher.matches();
 
     }
-
-
 
 
 }

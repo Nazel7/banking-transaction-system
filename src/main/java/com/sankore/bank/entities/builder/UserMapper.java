@@ -126,6 +126,30 @@ public class UserMapper {
                 .address(customersRecord.getAddress())
                 .firstName(customersRecord.getFirstName())
                 .lastName(customersRecord.getLastName())
+                .pin(customersRecord.getPin())
                 .build();
+    }
+
+
+    public static CustomersRecord mapModelToCustRecord(UserModel model) {
+
+        CustomersRecord record = new CustomersRecord();
+        record.setHomeAddress(model.getHomeAddress());
+        record.setVerifiedPhone(model.getVerifiedPhone());
+        record.setVerificationCode(model.getVerificationCode());
+        record.setPhone(model.getPhone());
+        record.setVerifiedHomeAddress(model.getVerifiedHomeAddress());
+        record.setEmail(model.getEmail());
+        record.setVerifiedEmail(model.getVerifiedEmail());
+        record.setBvn(model.getBvn());
+        record.setVerifiedBvn(model.getVerifiedBvn());
+        record.setTierLevel(model.getTierLevel());
+        record.setAddress(model.getAddress());
+        record.setFirstName(model.getFirstName());
+        record.setLastName(model.getLastName());
+        record.setPin(model.getPin());
+
+        return record;
+
     }
 }

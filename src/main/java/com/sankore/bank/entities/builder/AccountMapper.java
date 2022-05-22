@@ -6,6 +6,7 @@ import com.sankore.bank.dtos.response.Account;
 import com.sankore.bank.entities.models.UserModel;
 import com.sankore.bank.enums.TranxStatus;
 import com.sankore.bank.tables.records.BankAccountRecord;
+import com.sankore.bank.tables.records.CustomersRecord;
 import lombok.AccessLevel;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
@@ -54,4 +55,24 @@ public class AccountMapper {
                 .accountType(accountRecord.getAccountType())
                 .build();
     }
+
+    public static BankAccountRecord mapModelToAcctRecord(AccountModel accountRecord, CustomersRecord userModel) {
+
+        BankAccountRecord record = new BankAccountRecord();
+        record.setBalance(accountRecord.getBalance());
+        record.setBankCode(accountRecord.getBankCode());
+        record.setAccountIban(accountRecord.getIban());
+        record.setBvn(accountRecord.getBvn());
+        record.setAccountType(accountRecord.getAccountType());
+        record.setIsLiquidated(accountRecord.getIsLiquidated());
+        record.setIsLiquidityApproval(accountRecord.getIsLiquidityApproval());
+        record.setCurrency(accountRecord.getCurrency());
+        record.setStatus(accountRecord.getStatus());
+        record.setUserModelId(userModel.getId());
+
+        return record;
+
+    }
+
+
 }

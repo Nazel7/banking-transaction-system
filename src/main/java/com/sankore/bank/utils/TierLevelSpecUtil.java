@@ -3,10 +3,9 @@ package com.sankore.bank.utils;
 
 import com.sankore.bank.entities.models.UserModel;
 import com.sankore.bank.enums.TierLevel;
+import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
-
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class TierLevelSpecUtil {
@@ -69,14 +68,8 @@ public class TierLevelSpecUtil {
     private static Boolean isLevelTwoSatisfied(UserModel userModel) {
 
         try {
-            if (userModel.getVerifiedEmail() && userModel.getVerifiedPhone() && userModel.getVerifiedBvn()) {
-
-
-                return true;
-            }
-
-
-            return false;
+            return userModel.getVerifiedEmail() && userModel.getVerifiedPhone() && userModel.getVerifiedBvn() &&
+                    !userModel.getVerifiedHomeAddress() && userModel.getHomeAddress() == null;
 
         } catch (NullPointerException ex) {
             ex.printStackTrace();
@@ -88,13 +81,8 @@ public class TierLevelSpecUtil {
     private static Boolean isLevelThreeSatisfied(UserModel userModel) {
 
         try {
-            if (isLevelTwoSatisfied(userModel) && userModel.getHomeAddress() != null && userModel.getVerifiedHomeAddress()) {
-
-                return true;
-
-            }
-
-            return false;
+            return userModel.getVerifiedEmail() && userModel.getVerifiedPhone() && userModel.getVerifiedBvn() &&
+                    userModel.getHomeAddress() != null && userModel.getVerifiedHomeAddress();
 
         } catch (NullPointerException ex) {
             ex.printStackTrace();
@@ -103,19 +91,18 @@ public class TierLevelSpecUtil {
         }
     }
 
-    public static String getLevel(UserModel userModel){
+    public static String getLevel(UserModel userModel) {
 
 
-        if (userModel.getVerifiedPhone() && userModel.getVerifiedEmail() && userModel.getVerifiedBvn()){
+        if (userModel.getVerifiedPhone() && userModel.getVerifiedEmail() && userModel.getVerifiedBvn() &&
+                !userModel.getVerifiedHomeAddress() && userModel.getHomeAddress() == null) {
 
             return TierLevelConstant.LEVEL_TWO;
-        }
-        else if(userModel.getVerifiedPhone() && userModel.getVerifiedEmail() &&
-                userModel.getVerifiedBvn() && userModel.getVerifiedHomeAddress()){
+        } else if (userModel.getVerifiedPhone() && userModel.getVerifiedEmail() &&
+                userModel.getVerifiedBvn() && userModel.getVerifiedHomeAddress() && userModel.getHomeAddress() != null) {
 
             return TierLevelConstant.LEVEL_THREE;
-        }
-        else {
+        } else {
 
             return TierLevelConstant.LEVEL_ONE;
         }
