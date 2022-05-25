@@ -1,6 +1,8 @@
 package com.sankore.bank.controllers;
 
 
+import com.sankore.bank.Tables;
+import com.sankore.bank.entities.builder.SecureUserMapper;
 import com.sankore.bank.entities.builder.UserMapper;
 import com.sankore.bank.services.CustomUserDetailsService;
 import com.sankore.bank.auth.util.JwtUtil;
@@ -10,6 +12,9 @@ import com.sankore.bank.entities.models.SecureUserModel;
 import com.sankore.bank.entities.models.UserModel;
 import com.sankore.bank.repositories.SecureUserRepo;
 import com.sankore.bank.dtos.response.LogginResponse;
+import com.sankore.bank.tables.records.CustomersRecord;
+import com.sankore.bank.tables.records.SecureUserRecord;
+import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,7 +46,7 @@ public class AuthController {
 
     private final CustomUserDetailsService mCustomUserDetailsService;
 
-    private final SecureUserRepo mSecureUserRepo;
+    private final DSLContext dslContext;
 
     @Async
     @ApiOperation(value = "::: welcome :::", notes = "application health check")
@@ -64,12 +69,15 @@ public class AuthController {
             throw new Exception(" Invalid username or password");
         }
 
-        final SecureUserModel
-                secureUserModel = mSecureUserRepo.getSecureUserByUsername(
-                loginRequestUtil.getUsername());
+        final SecureUserRecord secureUserRecord =
+                dslContext.fetchOne(Tables.SECURE_USER, Tables.SECURE_USER.USERNAME.eq(loginRequestUtil.getUsername()));
+        assert secureUserRecord != null;
+        final CustomersRecord customersRecord = dslContext.fetchOne(Tables.CUSTOMERS,
+                Tables.CUSTOMERS.ID.eq(secureUserRecord.getUsermodelId()));
+        assert customersRecord != null;
+        final UserModel userModel = UserMapper.mapRecordToModel(customersRecord);
         final UserDetails userDetails= mCustomUserDetailsService.loadUserByUsername(
                 loginRequestUtil.getUsername());
-        final UserModel userModel= secureUserModel.getUserModel();
         final LogginResponse
                 logginResponse = UserMapper.mapToDto(userModel, jwtUtil.generateToken(userDetails));
 
